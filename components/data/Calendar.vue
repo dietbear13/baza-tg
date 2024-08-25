@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed, inject } from 'vue';
-import 'vuetify/lib/labs/VCalendar/VCalendar.css'; // Импорт стилей
+import {computed, inject, onMounted, ref, watch} from 'vue';
 
 interface Slot {
   _id: string;

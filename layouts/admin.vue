@@ -37,8 +37,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import {ref} from 'vue';
+import {useRouter} from 'vue-router';
 
 const drawer = ref(true);
 const router = useRouter();
@@ -54,10 +54,10 @@ const logout = () => {
 };
 
 // Применение middleware для проверки авторизации
-definePageMeta({
-  layout: 'admin',
-  middleware: 'auth'
-});
+// definePageMeta({
+//   layout: 'admin',
+//   middleware: 'auth'
+// });
 </script>
 
 <style scoped>

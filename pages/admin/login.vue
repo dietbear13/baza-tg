@@ -18,9 +18,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { authStore } from '@/store'; // Импортируйте типобезопасный модуль
+import {ref} from 'vue';
+import {useRouter} from 'vue-router';
 
 const username = ref('');
 const password = ref('');
@@ -35,7 +34,4 @@ const login = async () => {
   }
 };
 
-definePageMeta({
-  layout: 'admin',
-});
 </script>

@@ -6,9 +6,7 @@
       "@nuxt/types",
       "@types/node",
       "@vite/client",
-      "@nuxt/vuetify",
-      "@nuxt/typescript-runtime",
-      "vuex-module-decorators"
+      "@nuxt/vuetify"
     ],
     "strict": true,
     "jsx": "preserve",
@@ -17,9 +15,6 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,  // Включите поддержку экспериментальных декораторов
-    "emitDecoratorMetadata": false,  // Это не обязательно, так как reflect-metadata не используется
-
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
