@@ -1,0 +1,70 @@
+// Основные цветовые переменные
+$primary-color: #ffffff;
+$secondary-color: #4CAF50;
+$background-color: #121212;
+$surface-color: #1E1E1E;
+$text-color: #FFFFFF;
+$muted-text-color: #B0BEC5;
+
+// Применение темы
+body {
+  background-color: $background-color;
+  color: $text-color;
+  font-family: 'Roboto', sans-serif;
+}
+
+.v-app {
+  background-color: $background-color;
+}
+
+.v-card,
+.v-bottom-navigation,
+.v-btn {
+  background-color: $surface-color;
+  color: $text-color;
+}
+
+// Кнопки
+.v-btn {
+  border-radius: 8px;
+  &.primary {
+    background-color: $primary-color;
+  }
+  &.secondary {
+    background-color: $secondary-color;
+  }
+}
+
+// Тексты
+.v-list-item-title,
+.v-list-item-subtitle {
+  color: $text-color;
+}
+
+.v-alert {
+  background-color: $surface-color;
+  color: $text-color;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: $text-color;
+}
+
+a {
+  color: $primary-color;
+  text-decoration: none;
+}
+
+.v-icon {
+  color: $primary-color;
+}
+
+// Ссылки в навигации
+.v-bottom-navigation {
+  background-color: $surface-color;
+  color: $text-color;
+}
+
+.v-bottom-navigation .v-btn {
+  color: $primary-color;
+}
