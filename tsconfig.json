@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "types": [
+      "@nuxt/types",
+      "@types/node",
+      "@vite/client",
+      "@nuxt/vuetify",
+      "@nuxt/typescript-runtime",
+      "vuex-module-decorators"
+    ],
+    "strict": true,
+    "jsx": "preserve",
+    "importHelpers": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,  // Включите поддержку экспериментальных декораторов
+    "emitDecoratorMetadata": false,  // Это не обязательно, так как reflect-metadata не используется
+
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "exclude": ["node_modules", ".nuxt", "dist"]
+}
