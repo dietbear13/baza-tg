@@ -12,9 +12,11 @@
   "dependencies": {
     "@mdi/font": "^7.4.47",
     "@telegram-apps/sdk": "^1.1.3",
+    "date-fns": "^3.6.0",
     "googleapis": "^142.0.0",
     "mongoose": "^8.5.3",
-    "nuxt": "^3.12.4"
+    "nuxt": "^3.12.4",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
     "@nuxt/types": "^2.18.1",

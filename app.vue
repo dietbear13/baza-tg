@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { provide, computed, onMounted } from 'vue';
+import {computed, onMounted, provide} from 'vue';
+import {key, store} from '@/store'; // Импортируем store и ключ
+// Подключение store с использованием ключа
 import FooterMenu from '../test-bot/components/ui/FooterMenu.vue';
-
-
 
 let tgObj = window.Telegram;
 
@@ -20,7 +20,7 @@ function sendWebAppQueryResponse() {
       },
     };
 
-    fetch(`https://api.telegram.org/bot7451733807:AAGJlVAH1P3yZIXrkkJRKtFAWuwWXhybM6U/answerWebAppQuery`, {
+    fetch(`https://api.telegram.org/botYOUR_BOT_TOKEN/answerWebAppQuery`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -50,8 +50,9 @@ onMounted(() => {
   tgObj.WebApp.sendData("Привет !!! " + userData.value?.user?.username);
 });
 
-// Provide userData to the whole application
+// Provide userData and store to the whole application
 provide('userData', userData);
+provide(key, store); // Предоставляем store всему приложению
 </script>
 
 <template>

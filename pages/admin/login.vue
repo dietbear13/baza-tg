@@ -20,18 +20,38 @@
 <script setup lang="ts">
 import {ref} from 'vue';
 import {useRouter} from 'vue-router';
+import {useStore} from 'vuex';
+import {key} from '@/store';
+
+const store = useStore(key);
 
 const username = ref('');
 const password = ref('');
 const router = useRouter();
 
 const login = async () => {
-  try {
-    await authStore.login({ username: username.value, password: password.value });
-    router.push('/admin');
-  } catch (error) {
-    alert(error.message);
-  }
-};
+  console.log('Начало процесса входа');
 
+  try {
+    console.log('Отправка данных на сервер:', {
+      username: username.value,
+      password: password.value,
+    });
+
+    const success = await store.dispatch('login', { username: username.value, password: password.value });
+
+    console.log('Ответ от сервера 1:', success);
+
+    if (success) {
+      console.log('Успешный вход. Перенаправление на /admin');
+      await router.push('/admin');
+    } else {
+      console.error('Неправильное имя пользователя или пароль');
+    }
+  } catch (error) {
+    console.error('Ошибка при выполнении входа:', error);
+  }
+
+  console.log('Процесс входа завершен');
+};
 </script>

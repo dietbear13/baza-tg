@@ -1,10 +1,18 @@
-import { Middleware } from '@nuxt/types';
-import { authStore } from '@/store';
+import {defineNuxtRouteMiddleware, navigateTo} from 'nuxt/app';
+import {useStore} from 'vuex';
 
-const authMiddleware: Middleware = ({ redirect }) => {
-    if (!authStore.isAuthenticated) {
-        return redirect('/login');
+export default defineNuxtRouteMiddleware((to) => {
+    const store = useStore();
+
+    if (!store || !store.state) {
+        console.error("Store или state не доступны.");
+        return;
     }
-};
 
-export default authMiddleware;
+    console.log("Store state:", store.state);
+
+    if (!store.state.isAuthenticated) {
+        return navigateTo('/admin/login');
+    }
+});
+

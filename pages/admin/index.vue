@@ -1,22 +1,28 @@
-<!-- pages/admin/index.vue -->
 <template>
-  <v-container>
-    <v-row>
-      <v-col>
-        <h1>Добро пожаловать в админ панель!</h1>
-        <p>Здесь вы можете управлять приложением.</p>
-      </v-col>
-    </v-row>
-  </v-container>
+  <div class="admin-layout">
+    <AdminMenu />
+    <div class="content-wrapper">
+      <v-main>
+        <v-container>
+          <router-view />
+        </v-container>
+      </v-main>
+    </div>
+  </div>
 </template>
 
-<script setup lang="ts">
-definePageMeta({
-  layout: 'admin',
-  title: 'Главная - Админ Панель',
-});
+<script setup>
+import AdminMenu from '../../components/admin/AdminMenu.vue';
 </script>
 
 <style scoped>
-/* Стили, специфичные для этой страницы */
+.admin-layout {
+  display: flex;
+  height: 100vh;
+}
+
+.content-wrapper {
+  flex-grow: 1;
+  padding: 20px;
+}
 </style>

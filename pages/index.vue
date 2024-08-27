@@ -7,6 +7,7 @@
 
 <script lang="ts" setup>
 import Calendar from '../components/data/Calendar.vue'
+
 useHead({
   title: 'TODO SEO',
   meta: [
@@ -17,6 +18,11 @@ useHead({
   },
   script: [ { innerHTML: 'console.log(\'Hello world\')' } ]
 })
+
+definePageMeta({
+  middleware: 'auth',
+});
+
 </script>
 
 <style scoped>
