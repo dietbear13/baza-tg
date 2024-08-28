@@ -29,10 +29,21 @@
     <v-main>
       <v-container>
         <h1>Управление расписанием</h1>
+
+        <!-- Новый блок статистики -->
+        <v-container>
+          <h2>Статистика по слотам</h2>
+          <v-card class="pa-4">
+            <p>Всего слотов на {{ filters.date }}: {{ totalSlots }}</p>
+            <p>Занято: {{ bookedSlots }}</p>
+            <p>Свободно: {{ availableSlots }}</p>
+          </v-card>
+        </v-container>
+
+        <!-- Удалены третий таб и его контент -->
         <v-tabs v-model="activeTab" grow>
           <v-tab value="0">Таблица слотов</v-tab>
           <v-tab value="1">Календарь</v-tab>
-          <v-tab value="2">Статистика</v-tab>
         </v-tabs>
 
         <v-window v-model="activeTab" class="mt-4">
@@ -42,9 +53,6 @@
           <v-window-item value="1">
             <CalendarView />
           </v-window-item>
-          <v-window-item value="2">
-            <StatisticsView />
-          </v-window-item>
         </v-window>
       </v-container>
     </v-main>
@@ -52,11 +60,13 @@
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {computed, ref} from 'vue';
+import {format} from 'date-fns';
 import SlotTable from '../../components/admin/SlotTable.vue';
 import CalendarView from '../../components/admin/CalendarView.vue';
-import StatisticsView from '../../components/admin/StatisticsView.vue';
+// Удален импорт StatisticsView
 
+// Логика для управления страницей админки
 const drawer = ref(true);
 const activeTab = ref(0);
 
@@ -70,6 +80,21 @@ const menuItems = [
 const logout = () => {
   // Логика выхода
 };
+
+// Фильтр по дате
+const filters = ref({
+  date: format(new Date(), 'yyyy-MM-dd'),
+});
+
+// Заглушка для слотов (здесь вы должны заполнить данными)
+const slots = ref([
+  // Ваши реальные данные слотов
+]);
+
+// Расчеты статистики
+const totalSlots = computed(() => slots.value.length);
+const bookedSlots = computed(() => slots.value.filter(slot => slot.status === 'booked').length);
+const availableSlots = computed(() => slots.value.filter(slot => slot.status === 'available').length);
 </script>
 
 <style scoped>
@@ -84,5 +109,9 @@ const logout = () => {
 
 .mt-4 {
   margin-top: 16px;
+}
+
+.pa-4 {
+  padding: 16px;
 }
 </style>

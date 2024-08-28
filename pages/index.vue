@@ -19,10 +19,6 @@ useHead({
   script: [ { innerHTML: 'console.log(\'Hello world\')' } ]
 })
 
-definePageMeta({
-  middleware: 'auth',
-});
-
 </script>
 
 <style scoped>

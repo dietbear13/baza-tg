@@ -11,7 +11,7 @@
           >
             <v-list-item-content>
               <v-list-item-title class="date-time">
-                {{ formatDate(slot.date) }} в {{ formatTime(slot.time) }}
+                {{ formatDate(slot.datetime) }} в {{ formatTime(slot.datetime) }}
               </v-list-item-title>
               <v-list-item-subtitle class="massage-type">
                 {{ slot.massageDetails?.type || "Тип не указан" }}
@@ -64,12 +64,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, inject } from 'vue';
+import {inject, onMounted, ref} from 'vue';
 
 interface Slot {
   _id: string;
-  date: string;
-  time: string;
+  datetime: number;  // Используем Unix Timestamp
   room: number;
   status: string;
   bookedBy: string | null;
@@ -109,8 +108,8 @@ const loadBookedSlots = async () => {
 };
 
 // Форматирование даты в формате ДД.ММ.ГГГГ
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString('ru-RU', {
+const formatDate = (datetime: number) => {
+  return new Date(datetime * 1000).toLocaleDateString('ru-RU', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -118,8 +117,11 @@ const formatDate = (date: string) => {
 };
 
 // Форматирование времени в формате ЧЧ:ММ
-const formatTime = (time: string) => {
-  return time.slice(0, 5);
+const formatTime = (datetime: number) => {
+  return new Date(datetime * 1000).toLocaleTimeString('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 };
 
 // Подтверждение отмены записи

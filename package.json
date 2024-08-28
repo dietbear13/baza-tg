@@ -16,6 +16,7 @@
     "googleapis": "^142.0.0",
     "mongoose": "^8.5.3",
     "nuxt": "^3.12.4",
+    "ohmyfetch": "^0.4.21",
     "vuex": "^4.0.2"
   },
   "devDependencies": {
