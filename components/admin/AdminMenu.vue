@@ -32,8 +32,9 @@ const router = useRouter();
 
 const menuItems = [
   { title: 'Главная', route: '/admin/' },
-  { title: 'Клиенты', route: '/admin/users' },
   { title: 'Расписание', route: '/admin/schedule' },
+  { title: 'Аналитика', route: '/admin/analytics' },
+  { title: 'Клиенты', route: '/admin/users' },
   { title: 'Доступы', route: '/admin/access-control' },
 ];
 
