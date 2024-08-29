@@ -516,7 +516,7 @@ const editEvent = (event: any) => {
 // Запрос данных пользователя из Telegram API
 const fetchUserInfo = async (userId: string) => {
   try {
-    const data = await fetch(`https://api.telegram.org/bot***/getChat`, {
+    const data = await fetch(`https://api.telegram.org/bot7451733807:AAGJlVAH1P3yZIXrkkJRKtFAWuwWXhybM6U/getChat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: userId }),

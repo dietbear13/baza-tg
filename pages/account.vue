@@ -81,7 +81,9 @@ interface Slot {
 }
 
 interface TelegramUserData {
-  id: string;
+  user: {
+    id: string;
+  };
 }
 
 // Получаем данные через inject
@@ -97,8 +99,13 @@ const loadBookedSlots = async () => {
     const response = await fetch('http://localhost:3001/api/schedule');
     if (response.ok) {
       const data = await response.json();
-      const userId = String(userData?.value?.user?.id);
+      console.log("Данные из API:", data); // Логируем данные из API
+
+      const userId = String(userData?.user?.id);
+      console.log("ID пользователя:", userId); // Логируем ID пользователя
+
       bookedSlots.value = data.filter((slot: Slot) => slot.bookedBy === userId);
+      console.log("Отфильтрованные слоты:", bookedSlots.value); // Логируем отфильтрованные слоты
     } else {
       console.error('Ошибка при загрузке записей:', response.statusText);
     }
@@ -137,7 +144,7 @@ const cancelBooking = async () => {
   if (currentSlot && currentSlot._id) {
     try {
       const url = `http://localhost:3001/api/schedule/${currentSlot._id}/cancel`;
-      const userId = userData?.value?.user?.id || 'unknown_user';
+      const userId = userData?.user?.id || 'unknown_user';
 
       const response = await fetch(url, {
         method: 'POST',

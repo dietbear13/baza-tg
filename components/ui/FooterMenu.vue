@@ -8,6 +8,7 @@
     <v-btn
         value="home"
         :to="{ name: 'index' }"
+        text="Запись"
         icon
     >
       <v-icon>mdi-home</v-icon>
