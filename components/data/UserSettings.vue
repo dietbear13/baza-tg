@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="settingsDialog" max-width="500">
+  <v-dialog v-model="localDialog" max-width="500">
     <v-card>
       <v-card-title>Настройки</v-card-title>
       <v-card-text>
@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import {inject, onMounted, ref} from 'vue';
+import {inject, ref, watch} from 'vue';
 
 interface TelegramUserData {
   id: number;
@@ -54,7 +54,29 @@ const userData = ref(injectedUserData?.value || null);
 const notificationTime = ref<number | null>(null);
 const notificationOptions = ref<number[]>([1, 2, 3, 4, 5, 6, 12]);
 const notificationsEnabled = ref<boolean>(true);
-const settingsDialog = ref(false);
+
+// Получаем значение settingsDialog из родительского компонента
+const props = defineProps<{ settingsDialog: boolean }>();
+const emit = defineEmits<{ (e: 'update:settingsDialog', value: boolean): void }>();
+
+// Локальная переменная для управления диалогом
+const localDialog = ref(props.settingsDialog);
+
+// Наблюдение за изменением props.settingsDialog и синхронизация с localDialog
+watch(
+    () => props.settingsDialog,
+    (newValue) => {
+      localDialog.value = newValue;
+      if (newValue) {
+        loadUserSettings(); // Загружаем настройки при открытии диалога
+      }
+    }
+);
+
+// Закрытие диалога и синхронизация с родителем
+watch(localDialog, (newValue) => {
+  emit('update:settingsDialog', newValue);
+});
 
 const saveSettings = async () => {
   try {
@@ -73,7 +95,7 @@ const saveSettings = async () => {
 
     if (response.ok) {
       console.log('Настройки успешно сохранены');
-      settingsDialog.value = false;
+      localDialog.value = false; // Закрываем диалог после сохранения
     } else {
       console.error('Ошибка сохранения настроек');
     }
@@ -92,8 +114,4 @@ const loadUserSettings = async () => {
     console.error('Ошибка загрузки настроек пользователя:', error);
   }
 };
-
-onMounted(() => {
-  loadUserSettings(); // Загружаем настройки при монтировании компонента
-});
 </script>

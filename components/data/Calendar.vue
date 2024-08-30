@@ -89,7 +89,7 @@ const filterSlots = () => {
 };
 
 const confirmBooking = async (slot: Slot) => {
-  currentSlot = slot;
+  const currentSlot = slot;
   if (currentSlot && currentSlot._id) {
     try {
       const userId = userData?.id || 'unknown_user';

@@ -49,18 +49,14 @@
         <v-card-text>{{ dialogMessage }}</v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="blue-darken-1" class="text" @click="dialog = false">
-            Отмена
-          </v-btn>
-          <v-btn color="green-darken-1" class="text" @click="cancelBooking">
-            Подтвердить
-          </v-btn>
+          <v-btn color="blue-darken-1" text @click="dialog = false">Отмена</v-btn>
+          <v-btn color="green-darken-1" text @click="cancelBooking">Подтвердить</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Диалог настроек -->
-    <UserSettings :settingsDialog.sync="settingsDialog"/>
+    <UserSettings v-model:settingsDialog="settingsDialog" />
   </v-container>
 </template>
 
@@ -215,27 +211,3 @@ onMounted(async () => {
   loadBookedSlots();
 });
 </script>
-
-<style scoped>
-.booking-card {
-  background-color: #333333;
-  margin-bottom: 12px;
-  padding: 16px;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  color: #ffffff;
-}
-
-.date-time {
-  font-weight: bold;
-  color: #ffffff;
-}
-
-.cancel-icon {
-  margin-left: 16px;
-  cursor: pointer;
-}
-</style>
