@@ -1,8 +1,13 @@
 <template>
   <v-container>
+    <v-row justify="space-between" align="center">
+      <h1>Ваши записи на массаж</h1>
+      <v-btn icon @click="openSettings">
+        <v-icon>mdi-cog</v-icon>
+      </v-btn>
+    </v-row>
     <v-row>
       <v-col cols="12">
-        <h1>Ваши записи на массаж</h1>
         <v-list>
           <v-list-item
               v-for="slot in bookedSlots"
@@ -11,34 +16,27 @@
           >
             <v-list-item-content>
               <v-list-item-title class="date-time">
-                {{ formatDate(slot.datetime) }} в {{ formatTime(slot.datetime) }}
+                <v-icon color="primary">mdi-calendar</v-icon>
+                {{ formatDate(slot.date) }} в {{ formatTime(slot.time) }}
               </v-list-item-title>
-              <v-list-item-subtitle class="massage-type">
-                {{ slot.massageDetails?.type || "Тип не указан" }}
-              </v-list-item-subtitle>
-              <v-list-item-subtitle class="massage-description">
+              <v-list-item-subtitle>
+                {{ slot.massageDetails?.type || "Тип не указан" }} -
                 {{ slot.massageDetails?.description || "Описание отсутствует" }}
               </v-list-item-subtitle>
-              <v-list-item-subtitle class="room-number">
-                Кабинет: {{ slot.room }}
-              </v-list-item-subtitle>
+              <v-list-item-subtitle>Кабинет: {{ slot.room }}</v-list-item-subtitle>
             </v-list-item-content>
             <v-list-item-action>
-              <!-- Кнопка отмены записи -->
-              <v-btn
-                  color="secondary"
+              <v-icon
+                  class="cancel-icon"
+                  color="red"
                   @click="confirmCancellation(slot)"
-                  class="cancel-btn"
               >
-                Отменить запись
-              </v-btn>
+                mdi-close-circle
+              </v-icon>
             </v-list-item-action>
           </v-list-item>
         </v-list>
-        <v-alert
-            v-if="bookedSlots.length === 0"
-            type="info"
-        >
+        <v-alert v-if="bookedSlots.length === 0" type="info">
           У вас нет записей на массаж.
         </v-alert>
       </v-col>
@@ -60,15 +58,20 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Диалог настроек -->
+    <UserSettings :settingsDialog.sync="settingsDialog"/>
   </v-container>
 </template>
 
 <script setup lang="ts">
 import {inject, onMounted, ref} from 'vue';
+import UserSettings from "@/components/data/UserSettings.vue"; // Импортируем компонент UserSettings
 
 interface Slot {
   _id: string;
-  datetime: number;  // Используем Unix Timestamp
+  date: string;
+  time: string;
   room: number;
   status: string;
   bookedBy: string | null;
@@ -81,31 +84,63 @@ interface Slot {
 }
 
 interface TelegramUserData {
+  id: number;
   user: {
-    id: string;
+    id: number;
+    first_name: string;
+    last_name: string;
+    username: string;
+  };
+  settings: {
+    notifications: {
+      enabled: boolean;
+      hoursBefore: number;
+    };
   };
 }
 
 // Получаем данные через inject
-const userData = inject<TelegramUserData | null>('userData');
+const injectedUserData = inject<{ value: TelegramUserData | null }>('userData');
+const userData = ref(injectedUserData?.value || null);
 const bookedSlots = ref<Slot[]>([]);
 const dialog = ref(false);
+const settingsDialog = ref(false);
 const dialogTitle = ref('');
 const dialogMessage = ref('');
 let currentSlot: Slot | null = null;
 
+console.log("!!! injectedUserData", injectedUserData);
+console.log("!!! userData", userData);
+
+const fetchUserInfo = async (userId: number) => {
+  try {
+    const response = await fetch(`https://api.telegram.org/bot[TOKEN]/getChat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: userId }),
+    });
+    const data = await response.json();
+    console.log("data.result", data.result);
+    userData.value = { id: data.result.id, user: data.result, settings: userData.value?.settings || {} }; // Обновляем данные пользователя
+  } catch (error) {
+    console.error('Ошибка получения данных пользователя:', error);
+  }
+};
+
 const loadBookedSlots = async () => {
   try {
-    const response = await fetch('http://localhost:3001/api/schedule');
+    const response = await fetch('http://localhost:3001/api/slots');
     if (response.ok) {
       const data = await response.json();
-      console.log("Данные из API:", data); // Логируем данные из API
-
-      const userId = String(userData?.user?.id);
-      console.log("ID пользователя:", userId); // Логируем ID пользователя
-
-      bookedSlots.value = data.filter((slot: Slot) => slot.bookedBy === userId);
-      console.log("Отфильтрованные слоты:", bookedSlots.value); // Логируем отфильтрованные слоты
+      console.log("++ Записи, полученные с сервера:", data); // Логируем все полученные данные
+      const userId = String(userData.value?.user.id);
+      console.log("++ Текущий userId:", userId); // Логируем текущий userId
+      bookedSlots.value = data.filter((slot: Slot) => {
+        const isMatch = String(slot.bookedBy) === userId;
+        console.log(`-- Сопоставление слота ${slot._id} с userId: ${isMatch}`); // Логируем результат сопоставления
+        return isMatch;
+      });
+      console.log("++ Отфильтрованные записи пользователя:", bookedSlots.value); // Логируем отфильтрованные записи
     } else {
       console.error('Ошибка при загрузке записей:', response.statusText);
     }
@@ -115,8 +150,8 @@ const loadBookedSlots = async () => {
 };
 
 // Форматирование даты в формате ДД.ММ.ГГГГ
-const formatDate = (datetime: number) => {
-  return new Date(datetime * 1000).toLocaleDateString('ru-RU', {
+const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString('ru-RU', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -124,11 +159,8 @@ const formatDate = (datetime: number) => {
 };
 
 // Форматирование времени в формате ЧЧ:ММ
-const formatTime = (datetime: number) => {
-  return new Date(datetime * 1000).toLocaleTimeString('ru-RU', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+const formatTime = (time: string) => {
+  return time.slice(0, 5);
 };
 
 // Подтверждение отмены записи
@@ -143,8 +175,8 @@ const confirmCancellation = (slot: Slot) => {
 const cancelBooking = async () => {
   if (currentSlot && currentSlot._id) {
     try {
-      const url = `http://localhost:3001/api/schedule/${currentSlot._id}/cancel`;
-      const userId = userData?.user?.id || 'unknown_user';
+      const url = `http://localhost:3001/api/slots/${currentSlot._id}/cancel`;
+      const userId = String(userData.value?.user.id) || 'unknown_user';
 
       const response = await fetch(url, {
         method: 'POST',
@@ -171,35 +203,39 @@ const cancelBooking = async () => {
   }
 };
 
-onMounted(() => {
+const openSettings = () => {
+  console.log('Клик по кнопке настройки');
+  settingsDialog.value = true;
+};
+
+onMounted(async () => {
+  if (userData.value?.user.id) {
+    await fetchUserInfo(userData.value.user.id);
+  }
   loadBookedSlots();
 });
 </script>
 
 <style scoped>
 .booking-card {
-  background-color: #1E1E1E;
+  background-color: #333333;
+  margin-bottom: 12px;
   padding: 16px;
   border-radius: 8px;
-  margin-bottom: 16px;
   display: flex;
-  justify-content: space-between;
+  flex-direction: row;
   align-items: center;
+  justify-content: space-between;
+  color: #ffffff;
 }
 
 .date-time {
-  font-size: 1.25rem;
   font-weight: bold;
+  color: #ffffff;
 }
 
-.massage-type,
-.massage-description,
-.room-number {
-  color: #B0BEC5;
-  margin-top: 4px;
-}
-
-.cancel-btn {
+.cancel-icon {
   margin-left: 16px;
+  cursor: pointer;
 }
 </style>

@@ -1,58 +1,50 @@
 <script setup lang="ts">
 import {computed, onMounted, provide} from 'vue';
 import {key, store} from '@/store'; // Импортируем store и ключ
-// Подключение store с использованием ключа
 import FooterMenu from '../test-bot/components/ui/FooterMenu.vue';
 
 let tgObj = window.Telegram;
 
-function sendWebAppQueryResponse() {
-  const tg = tgObj.WebApp;
-  const query_id = tg.initDataUnsafe.query_id;
+function sendUserDataToServer() {
+  const user = tgObj.WebApp.initDataUnsafe?.user;
+  console.log('Attempting to send user data to server. User:', user);
 
-  if (query_id) {
-    const result = {
-      type: 'article',
-      id: 'unique-id',
-      title: 'Заголовок сообщения',
-      input_message_content: {
-        message_text: 'Это сообщение отправлено из мини-приложения!',
-      },
-    };
-
-    fetch(`https://api.telegram.org/botYOUR_BOT_TOKEN/answerWebAppQuery`, {
+  if (user?.id) {
+    fetch('http://localhost:3001/api/users', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        web_app_query_id: query_id,
-        result: result,
+        telegramId: user.id, // Передаем ID пользователя на сервер
       }),
     })
-        .then((response) => response.json())
+        .then((response) => {
+          console.log('Server response:', response);
+          return response.json();
+        })
         .then((data) => {
-          console.log('Ответ от Telegram:', data);
+          console.log('User data sent to server successfully:', data);
         })
         .catch((error) => {
-          console.error('Ошибка при отправке сообщения:', error);
+          console.error('Error sending user data:', error);
         });
   } else {
-    console.error('Query ID отсутствует. Не удалось отправить сообщение.');
+    console.error('No user data found to send to the server');
   }
 }
 
 let userData = computed(() => tgObj.WebApp.initDataUnsafe);
 
 onMounted(() => {
-  console.log("mounted", tgObj);
-  console.log("mounted initDataUnsafe", userData.value);
-  tgObj.WebApp.sendData("Привет !!! " + userData.value?.user?.username);
+  console.log('mounted', tgObj);
+  console.log('mounted initDataUnsafe', userData.value);
+  sendUserDataToServer(); // Отправляем данные пользователя на сервер при монтировании компонента
 });
 
 // Provide userData and store to the whole application
 provide('userData', userData);
-provide(key, store); // Предоставляем store всему приложению
+provide(key, store);
 </script>
 
 <template>

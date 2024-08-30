@@ -19,7 +19,6 @@ interface TelegramUserData {
   id: string;
 }
 
-// Получаем данные через inject
 const userData = inject<TelegramUserData | null>('userData');
 
 const selectedDate = ref(new Date());
@@ -52,24 +51,24 @@ const massageTypes = computed<{ label: string; value: Slot }[]>(() => {
 
 const loadSlots = async () => {
   try {
-    const response = await fetch('http://localhost:3001/api/schedule');
+    const response = await fetch('http://localhost:3001/api/slots');
     if (response.ok) {
       const data = await response.json();
       slots.value = data.map((slot: any) => {
-        const date = new Date(slot.datetime * 1000); // Преобразуем UNIX timestamp в миллисекунды
+        const date = new Date(slot.datetime * 1000);
 
         if (isNaN(date.getTime())) {
           console.error('Неверное значение времени:', slot.datetime);
-          return null; // или обработайте иначе
+          return null;
         }
 
         return {
           ...slot,
-          date: date.toISOString().split('T')[0], // Форматируем дату как строку "YYYY-MM-DD"
-          time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }), // Форматируем время
+          date: date.toISOString().split('T')[0],
+          time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           _id: typeof slot._id === 'object' && slot._id.$oid ? slot._id.$oid : slot._id,
         };
-      }).filter(slot => slot !== null); // Фильтруем слоты с неверными датами
+      }).filter(slot => slot !== null);
       filterSlots();
     } else {
       console.error('Ошибка при загрузке слотов:', response.statusText);
@@ -80,11 +79,11 @@ const loadSlots = async () => {
 };
 
 const filterSlots = () => {
-  const selectedDateValue = selectedDate.value.toISOString().slice(0, 10); // Преобразуем выбранную дату в строку формата YYYY-MM-DD
+  const selectedDateValue = selectedDate.value.toISOString().slice(0, 10);
 
   filteredSlots.value = slots.value.filter(slot => {
     const slotDateValue = new Date(slot.date).toISOString().slice(0, 10);
-    const isAvailable = slot.status === 'available'; // Изменяем условие для показа только свободных слотов
+    const isAvailable = slot.status === 'available';
     return slotDateValue === selectedDateValue && isAvailable;
   });
 };
@@ -93,8 +92,8 @@ const confirmBooking = async (slot: Slot) => {
   currentSlot = slot;
   if (currentSlot && currentSlot._id) {
     try {
-      const userId = userData?.value?.user?.id || 'unknown_user';
-      let url = `http://localhost:3001/api/schedule/${currentSlot._id}/book`;
+      const userId = userData?.id || 'unknown_user';
+      const url = `http://localhost:3001/api/slots/${currentSlot._id}/book`;
 
       const response = await fetch(url, {
         method: 'POST',
@@ -110,7 +109,7 @@ const confirmBooking = async (slot: Slot) => {
       if (response.ok) {
         currentSlot.status = 'booked';
         currentSlot.bookedBy = userId;
-        filterSlots(); // Обновляем отображение доступных слотов
+        filterSlots();
         console.log('Запись успешно выполнена');
       } else {
         const result = await response.json();
@@ -138,18 +137,21 @@ watch(slots, () => {
 </script>
 
 <template>
-  <v-container>
+  <v-container style="align: center">
     <v-row justify="center">
-      <v-date-picker
-          v-model="selectedDate"
-          v-model:displayed-month="displayedMonth"
-          :first-day-of-week="1"
-          :locale="'en-CA'"
-          color="primary"
-      ></v-date-picker>
+      <v-col cols="12" sm="8" md="6" lg="4">
+        <v-date-picker
+            v-model="selectedDate"
+            v-model:displayed-month="displayedMonth"
+            :first-day-of-week="1"
+            :locale="'en-CA'"
+            color="primary"
+            class="mb-4"
+        ></v-date-picker>
+      </v-col>
     </v-row>
-    <v-row>
-      <v-col cols="12">
+    <v-row justify="center">
+      <v-col cols="12" sm="8" md="6" lg="4">
         <v-select
             v-model="selectedTime"
             :items="availableTimes"
@@ -157,9 +159,12 @@ watch(slots, () => {
             color="primary"
             item-title="label"
             item-value="value"
+            class="mb-4"
         ></v-select>
       </v-col>
-      <v-col cols="12" v-if="selectedTime">
+    </v-row>
+    <v-row justify="center" v-if="selectedTime">
+      <v-col cols="12" sm="8" md="6" lg="4">
         <v-select
             v-model="selectedSlot"
             :items="massageTypes"
@@ -167,17 +172,21 @@ watch(slots, () => {
             color="primary"
             item-title="label"
             item-value="value"
+            class="mb-4"
         ></v-select>
       </v-col>
     </v-row>
     <v-row justify="center" v-if="selectedSlot">
-      <v-btn color="primary" @click="confirmBooking(selectedSlot)">
-        Записаться на массаж
-      </v-btn>
+      <v-col cols="12" sm="8" md="6" lg="4">
+        <v-btn color="primary" block @click="confirmBooking(selectedSlot)">
+          Записаться на массаж
+        </v-btn>
+      </v-col>
     </v-row>
-
     <v-row justify="center" v-if="filteredSlots.length === 0">
-      <v-alert type="info">На выбранную дату нет свободных записей на массаж.</v-alert>
+      <v-col cols="12" sm="8" md="6" lg="4">
+        <v-alert type="info">На выбранную дату нет свободных записей на массаж.</v-alert>
+      </v-col>
     </v-row>
   </v-container>
 </template>

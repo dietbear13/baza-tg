@@ -1,7 +1,9 @@
 <!-- /pages/index.vue -->
 <template>
-  <div>
-    <Calendar />
+  <div class="pa-4" style="align-content: center">
+    <h1 style="text-align: center">Записаться</h1>
+
+    <Calendar style="text-align: center"/>
   </div>
 </template>
 
