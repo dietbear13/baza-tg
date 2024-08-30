@@ -110,7 +110,7 @@ console.log("!!! userData", userData);
 
 const fetchUserInfo = async (userId: number) => {
   try {
-    const response = await fetch(`https://api.telegram.org/bot[TOKEN]/getChat`, {
+    const response = await fetch(`https://api.telegram.org/bot7451733807:AAGJlVAH1P3yZIXrkkJRKtFAWuwWXhybM6U/getChat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: userId }),
