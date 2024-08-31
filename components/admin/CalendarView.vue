@@ -127,6 +127,11 @@ const selectedDays = ref(['Понедельник', 'Вторник', 'Сред�
 const startTime = ref('08:00');
 const endTime = ref('22:00');
 
+onMounted(() => {
+  loadSlots();
+});
+
+
 const loadSlots = async () => {
   try {
     const { data } = await useFetch('http://localhost:3001/api/slots');
@@ -136,9 +141,30 @@ const loadSlots = async () => {
   }
 };
 
-onMounted(() => {
-  loadSlots();
-});
+const bookSlot = async (event, userId) => {
+  try {
+    const response = await fetch(`http://localhost:3001/api/admin/slots/${event._id}/book`, {
+      method: 'POST',
+      body: JSON.stringify({ userId }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`Ошибка при бронировании слота: ${response.statusText}`);
+      return;
+    }
+
+    const result = await response.json();
+    console.log('Слот успешно забронирован:', result);
+    await loadSlots(); // Обновление слотов после бронирования
+  } catch (error) {
+    console.error('Ошибка при бронировании слота:', error);
+  }
+};
+
+
 
 const generateTimeSlots = () => {
   const slots = [];
@@ -193,15 +219,19 @@ const nextWeek = () => {
   selectedDate.value = addDays(selectedDate.value, 7);
 };
 
+// В функции fillSlots:
 const fillSlots = async () => {
   const startHour = parseInt(startTime.value.split(':')[0]);
   const endHour = parseInt(endTime.value.split(':')[0]);
 
-  const filteredWeekDays = weekDays.value.filter(day => selectedDays.value.includes(day.label));
+  const filteredWeekDays = weekDays.value.filter(day =>
+      selectedDays.value.map(day => day.toLowerCase()).includes(day.label.toLowerCase())
+  );
 
   for (const day of filteredWeekDays) {
     for (let hour = startHour; hour <= endHour; hour++) {
       const datetime = Math.floor(new Date(day.date).setHours(hour, 0, 0, 0) / 1000);
+      console.log("Attempting to add slot with datetime:", datetime);
 
       if (!slots.value.some(slot => slot.datetime === datetime)) {
         const newSlot = {
@@ -216,17 +246,25 @@ const fillSlots = async () => {
           },
         };
 
+        console.log("New slot data to be sent:", JSON.stringify(newSlot, null, 2));
+
         try {
-          await useFetch('http://localhost:3001/api/slots', {
+          const response = await fetch('http://localhost:3001/api/admin/slots', {
             method: 'POST',
             body: JSON.stringify(newSlot),
             headers: {
               'Content-Type': 'application/json',
             },
           });
+          if (!response.ok) {
+            throw new Error(`Ошибка при создании слота: ${response.statusText}`);
+          }
+          console.log("Slot created successfully:", await response.json());
         } catch (error) {
           console.error('Ошибка при создании слота:', error);
         }
+      } else {
+        console.log(`Slot with datetime ${datetime} already exists`);
       }
     }
   }
@@ -239,18 +277,18 @@ const editEvent = (event) => {
   // Здесь может быть вызов формы редактирования
 };
 
-const deleteEvent = async (event) => {
-  console.log('Удаление события:', event);
-  // Здесь должен быть код для удаления события из базы данных
-  try {
-    await useFetch(`http://localhost:3001/api/slots/${event._id}`, {
-      method: 'DELETE',
-    });
-    loadSlots();
-  } catch (error) {
-    console.error('Ошибка при удалении слота:', error);
-  }
-};
+// const deleteEvent = async (event) => {
+//   console.log('Удаление события:', event);
+//   // Здесь должен быть код для удаления события из базы данных
+//   try {
+//     await useFetch(`http://localhost:3001/api/admin/slots/${event._id}`, {
+//       method: 'DELETE',
+//     });
+//     loadSlots();
+//   } catch (error) {
+//     console.error('Ошибка при удалении слота:', error);
+//   }
+// };
 </script>
 
 <style scoped>

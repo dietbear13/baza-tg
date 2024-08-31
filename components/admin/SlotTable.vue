@@ -57,6 +57,7 @@
         hide-default-footer
         fixed-header
     >
+      <!-- Table Header -->
       <template v-slot:top>
         <thead>
         <tr>
@@ -83,6 +84,7 @@
         </thead>
       </template>
 
+      <!-- Table Body -->
       <template v-slot:default="{ items }">
         <tbody>
         <tr v-for="timeSlot in items" :key="timeSlot">
@@ -156,6 +158,20 @@ import {computed, onMounted, ref} from 'vue';
 import {addDays, format, fromUnixTime, setHours, setMinutes, setSeconds, startOfWeek} from 'date-fns';
 import {ru} from 'date-fns/locale';
 
+interface Slot {
+  _id: string;
+  datetime: number;
+  room: number;
+  status: string;
+  bookedBy: string | null;
+  massageDetails: {
+    type: string;
+    duration: number;
+    price: number;
+  };
+}
+
+
 const selectedDate = ref(startOfWeek(new Date(), { weekStartsOn: 1 }));
 const slots = ref([]);
 const selectedDays = ref(['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']);
@@ -176,7 +192,7 @@ const releaseSlot = async (event: any) => {
   event.bookedBy = null;
 
   try {
-    const response = await fetch(`http://localhost:3001/api/slots/${event._id}`, {
+    const response = await fetch(`http://localhost:3001/api/admin/slots/${event._id}`, {
       method: 'PATCH',
       body: JSON.stringify(event),
       headers: {
@@ -277,11 +293,11 @@ const cancelSlots = async () => {
     }
   }
 
-  // Показать уведомление об успешной отмене слотов
-  alert("Все забронированные слоты по выбранным фильтрам успешно отменены!");
+// Показать уведомление об успешной отмене слотов
+alert("Все забронированные слоты по выбранным фильтрам успешно отменены!");
 
-  // Обновляем данные после отмены
-  await loadSlots();
+// Обновляем данные после отмены
+await loadSlots();
 };
 
 const deleteSlots = async () => {
@@ -315,11 +331,11 @@ const deleteSlots = async () => {
     }
   }
 
-  // Показать уведомление об успешном удалении слотов
-  alert("Все слоты по выбранным фильтрам успешно удалены!");
+// Показать уведомление об успешном удалении слотов
+alert("Все слоты по выбранным фильтрам успешно удалены!");
 
-  // Обновляем данные после удаления
-  await loadSlots();
+// Обновляем данные после удаления
+await loadSlots();
 };
 
 // Функция для освобождения всех слотов
@@ -361,19 +377,23 @@ const releaseSlots = async () => {
     }
   }
 
-  // Показать уведомление об успешном освобождении слотов
-  alert("Все слоты по выбранным фильтрам успешно освобождены!");
+// Показать уведомление об успешном освобождении слотов
+alert("Все слоты по выбранным фильтрам успешно освобождены!");
 
-  // Обновляем данные после освобождения
-  await loadSlots();
+// Обновляем данные после освобождения
+await loadSlots();
 };
 
 const loadSlots = async () => {
   try {
-    const data = await fetch('http://localhost:3001/api/slots').then(res => res.json());
-    slots.value = data.map((slot: any) => ({
+    const response = await fetch('http://localhost:3001/api/slots');
+    if (!response.ok) {
+      throw new Error(`Ошибка при загрузке слотов: ${response.statusText}`);
+    }
+    const data: Slot[] = await response.json();
+    slots.value = data.map(slot => ({
       ...slot,
-      _id: slot._id || slot.id // Приведение идентификатора к ожидаемому виду
+      _id: slot._id || slot.id, // Убедитесь, что идентификатор есть у всех слотов
     }));
   } catch (error) {
     console.error('Ошибка загрузки данных:', error);
@@ -453,9 +473,6 @@ const fillSlots = async () => {
 
   console.log("Selected days from filter:", selectedDays.value);
 
-  console.log("Week days:", weekDays.value.map(day => day.label));
-
-  // Приводим дни из фильтра и из недели к нижнему регистру перед сравнением
   const filteredWeekDays = weekDays.value.filter(day =>
       selectedDays.value.map(day => day.toLowerCase()).includes(day.label.toLowerCase())
   );
@@ -473,7 +490,8 @@ const fillSlots = async () => {
       console.log("Attempting to add slot with datetime:", datetime);
 
       if (!slots.value.some(slot => slot.datetime === datetime)) {
-        const newSlot = {
+        const newSlot: Slot = {
+          _id: '', // Временно, сервер вернет реальный ID
           datetime,
           room: 1,
           status: 'available',
@@ -488,13 +506,19 @@ const fillSlots = async () => {
         console.log("New slot data to be sent:", JSON.stringify(newSlot, null, 2));
 
         try {
-          const response = await fetch('http://localhost:3001/api/slots', {
+          const response = await fetch('http://localhost:3001/api/admin/slots', { // Исправлен URL
             method: 'POST',
             body: JSON.stringify(newSlot),
             headers: {
               'Content-Type': 'application/json',
             },
           });
+
+          if (!response.ok) {
+            console.error(`Ошибка при создании слота: ${response.statusText}`);
+            continue;
+          }
+
           console.log("Slot created successfully:", await response.json());
         } catch (error) {
           console.error('Ошибка при создании слота:', error);
@@ -508,6 +532,10 @@ const fillSlots = async () => {
   await loadSlots();
 };
 
+onMounted(() => {
+  loadSlots();
+});
+
 const editEvent = (event: any) => {
   console.log('Редактирование события:', event);
   // Здесь может быть вызов формы редактирования
@@ -516,17 +544,17 @@ const editEvent = (event: any) => {
 // Запрос данных пользователя из Telegram API
 const fetchUserInfo = async (userId: string) => {
   try {
-    const data = await fetch(`https://api.telegram.org/bot7451733807:AAGJlVAH1P3yZIXrkkJRKtFAWuwWXhybM6U/getChat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: userId }),
-    }).then(res => res.json());
-    console.log("data.result", data.result)
-    return data.result; // Используем data.result, так как fetch уже обработал JSON
-  } catch (error) {
-    console.error(error);
-    return { first_name: 'Неизвестно', last_name: '', username: 'unknown' };
-  }
+    const data = await fetch('https://api.telegram.org/bot7451733807:AAGJlVAH1P3yZIXrkkJRKtFAWuwWXhybM6U/getChat', {
+    method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: userId }),
+  }).then(res => res.json());
+  console.log("data.result", data.result)
+  return data.result; // Используем data.result, так как fetch уже обработал JSON
+} catch (error) {
+  console.error(error);
+  return { first_name: 'Неизвестно', last_name: '', username: 'unknown' };
+}
 };
 
 // Кэширование данных пользователя
