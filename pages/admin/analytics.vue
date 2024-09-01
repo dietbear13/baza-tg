@@ -9,7 +9,7 @@
         <v-row>
           <v-col cols="12" md="4">
             <v-card class="pa-4 text-center">
-              <v-icon size="48" class="mb-2">mdi-calendar-today</v-icon>
+              <v-icon size="34" class="mb-2">mdi-calendar-today</v-icon>
               <h3>{{ totalSlots }}</h3>
               <p>Всего слотов</p>
             </v-card>
@@ -17,7 +17,7 @@
 
           <v-col cols="12" md="4">
             <v-card class="pa-4 text-center">
-              <v-icon size="48" class="mb-2" color="red">mdi-calendar-check</v-icon>
+              <v-icon size="34" class="mb-2" color="red">mdi-calendar-check</v-icon>
               <h3>{{ bookedSlots }}</h3>
               <p>Занято</p>
             </v-card>
@@ -25,7 +25,7 @@
 
           <v-col cols="12" md="4">
             <v-card class="pa-4 text-center">
-              <v-icon size="48" class="mb-2" color="green">mdi-calendar-remove</v-icon>
+              <v-icon size="34" class="mb-2" color="green">mdi-calendar-remove</v-icon>
               <h3>{{ availableSlots }}</h3>
               <p>Свободно</p>
             </v-card>

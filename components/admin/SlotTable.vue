@@ -215,7 +215,7 @@ const deleteEvent = async (event: any) => {
   }
 
   try {
-    const response = await fetch(`http://localhost:3001/api/slots/${event._id}`, {
+    const response = await fetch(`http://localhost:3001/api/admin/slots/${event._id}`, {
       method: 'DELETE',
     });
     console.log("Slot deleted successfully:", await response.json());
@@ -231,7 +231,7 @@ const cancelColumn = async (day: any) => {
   for (const slot of slotsToCancel) {
     slot.status = 'available';
     slot.bookedBy = null;
-    await fetch(`http://localhost:3001/api/slots/${slot._id}`, {
+    await fetch(`http://localhost:3001/api/admin/slots/${slot._id}`, {
       method: 'PATCH',
       body: JSON.stringify(slot),
       headers: {
@@ -245,7 +245,7 @@ const cancelColumn = async (day: any) => {
 const deleteColumn = async (day: any) => {
   const slotsToDelete = slots.value.filter(slot => format(fromUnixTime(slot.datetime), 'yyyy-MM-dd') === format(day.date, 'yyyy-MM-dd'));
   for (const slot of slotsToDelete) {
-    await fetch(`http://localhost:3001/api/slots/${slot._id}`, {
+    await fetch(`http://localhost:3001/api/admin/slots/${slot._id}`, {
       method: 'DELETE',
     });
   }
@@ -278,7 +278,7 @@ const cancelSlots = async () => {
         slotToUpdate.bookedBy = null;
 
         try {
-          const response = await fetch(`http://localhost:3001/api/slots/${slotToUpdate._id}`, {
+          const response = await fetch(`http://localhost:3001/api/admin/slots/${slotToUpdate._id}`, {
             method: 'PUT',
             body: JSON.stringify(slotToUpdate),
             headers: {
@@ -320,7 +320,7 @@ const deleteSlots = async () => {
 
       if (slotToDelete) {
         try {
-          const response = await fetch(`http://localhost:3001/api/slots/${slotToDelete._id}`, {
+          const response = await fetch(`http://localhost:3001/api/admin/slots/${slotToDelete._id}`, {
             method: 'DELETE',
           });
           console.log("Slot deleted successfully:", await response.json());

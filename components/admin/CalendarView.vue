@@ -58,7 +58,7 @@
         <tr>
           <th class="time-column">Время</th>
           <th v-for="day in weekDays" :key="day.dateFormatted" class="day-column">
-            {{ day.label }},<br>{{ day.dateFormatted }}
+            {{ day.label }},<br />{{ day.dateFormatted }}
           </th>
         </tr>
         </thead>
@@ -72,32 +72,27 @@
             <div class="day-events">
               <span v-if="day.events.length === 0"></span>
               <span v-else>
-                <v-menu
-                    v-for="event in day.events.filter(event => format(event.start, 'yyyy-MM-dd HH:mm') === format(new Date(day.date.getTime() + (parseInt(timeSlot.split(':')[0]) * 3600000) + (parseInt(timeSlot.split(':')[1]) * 60000)), 'yyyy-MM-dd HH:mm'))"
-                    :key="event.name + event.start"
-                    close-on-content-click
-                >
-                  <template v-slot:activator="{ props }">
-                    <v-chip
-                        v-bind="props"
-                        :color="event.color"
-                        class="mb-2"
-                        small
-                    >
-                      {{ event.name }}
-                    </v-chip>
-                  </template>
+                  <v-menu
+                      v-for="event in day.events.filter(event => format(event.start, 'yyyy-MM-dd HH:mm') === format(new Date(day.date.getTime() + (parseInt(timeSlot.split(':')[0]) * 3600000) + (parseInt(timeSlot.split(':')[1]) * 60000)), 'yyyy-MM-dd HH:mm'))"
+                      :key="event.name + event.start"
+                      close-on-content-click
+                  >
+                    <template v-slot:activator="{ props }">
+                      <v-chip v-bind="props" :color="event.color" class="mb-2" small>
+                        {{ event.name }}
+                      </v-chip>
+                    </template>
 
-                  <v-list>
-                    <v-list-item @click="editEvent(event)">
-                      <v-list-item-title>Редактировать</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="deleteEvent(event)">
-                      <v-list-item-title>Удалить</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </span>
+                    <v-list>
+                      <v-list-item @click="editEvent(event)">
+                        <v-list-item-title>Редактировать</v-list-item-title>
+                      </v-list-item>
+                      <v-list-item @click="deleteEvent(event)">
+                        <v-list-item-title>Удалить</v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
+                </span>
             </div>
           </td>
         </tr>
@@ -131,40 +126,15 @@ onMounted(() => {
   loadSlots();
 });
 
-
 const loadSlots = async () => {
   try {
-    const { data } = await useFetch('http://localhost:3001/api/slots');
+    const { data } = await useFetch('http://localhost:3001/api/admin/slots');
+    console.log('Загруженные слоты:', data.value);
     slots.value = data.value;
   } catch (error) {
     console.error('Ошибка загрузки данных:', error);
   }
 };
-
-const bookSlot = async (event, userId) => {
-  try {
-    const response = await fetch(`http://localhost:3001/api/admin/slots/${event._id}/book`, {
-      method: 'POST',
-      body: JSON.stringify({ userId }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      console.error(`Ошибка при бронировании слота: ${response.statusText}`);
-      return;
-    }
-
-    const result = await response.json();
-    console.log('Слот успешно забронирован:', result);
-    await loadSlots(); // Обновление слотов после бронирования
-  } catch (error) {
-    console.error('Ошибка при бронировании слота:', error);
-  }
-};
-
-
 
 const generateTimeSlots = () => {
   const slots = [];
@@ -182,8 +152,8 @@ const weekDays = computed(() => {
   return Array.from({ length: 7 }).map((_, i) => {
     const date = addDays(start, i);
     return {
-      label: format(date, 'eeee', {locale: ru}),
-      dateFormatted: format(date, 'dd MMM', {locale: ru}),
+      label: format(date, 'eeee', { locale: ru }),
+      dateFormatted: format(date, 'dd MMM', { locale: ru }),
       date,
       events: slots.value
           .filter(slot => format(fromUnixTime(slot.datetime), 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd'))
@@ -192,24 +162,23 @@ const weekDays = computed(() => {
             start: fromUnixTime(slot.datetime),
             color: slot.status === 'booked' ? 'red' : 'green',
             bookedBy: slot.bookedBy,
+            _id: slot._id // ID слота сохраняется здесь
           })),
     };
   });
 });
 
 const headers = computed(() => [
-  {text: 'Время', value: 'timeSlot', align: 'start', sortable: false},
+  { text: 'Время', value: 'timeSlot', align: 'start', sortable: false },
   ...weekDays.value.map(day => ({
     text: `${day.label}, ${day.dateFormatted}`,
     value: day.dateFormatted,
     align: 'start',
-    sortable: false
+    sortable: false,
   })),
 ]);
 
-const daysOptions = [
-  'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье',
-];
+const daysOptions = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
 
 const prevWeek = () => {
   selectedDate.value = addDays(selectedDate.value, -7);
@@ -231,7 +200,7 @@ const fillSlots = async () => {
   for (const day of filteredWeekDays) {
     for (let hour = startHour; hour <= endHour; hour++) {
       const datetime = Math.floor(new Date(day.date).setHours(hour, 0, 0, 0) / 1000);
-      console.log("Attempting to add slot with datetime:", datetime);
+      console.log('Attempting to add slot with datetime:', datetime);
 
       if (!slots.value.some(slot => slot.datetime === datetime)) {
         const newSlot = {
@@ -246,7 +215,7 @@ const fillSlots = async () => {
           },
         };
 
-        console.log("New slot data to be sent:", JSON.stringify(newSlot, null, 2));
+        console.log('New slot data to be sent:', JSON.stringify(newSlot, null, 2));
 
         try {
           const response = await fetch('http://localhost:3001/api/admin/slots', {
@@ -259,7 +228,7 @@ const fillSlots = async () => {
           if (!response.ok) {
             throw new Error(`Ошибка при создании слота: ${response.statusText}`);
           }
-          console.log("Slot created successfully:", await response.json());
+          console.log('Slot created successfully:', await response.json());
         } catch (error) {
           console.error('Ошибка при создании слота:', error);
         }
@@ -272,33 +241,52 @@ const fillSlots = async () => {
   await loadSlots();
 };
 
-const editEvent = (event) => {
+const editEvent = event => {
   console.log('Редактирование события:', event);
   // Здесь может быть вызов формы редактирования
 };
 
-// const deleteEvent = async (event) => {
-//   console.log('Удаление события:', event);
-//   // Здесь должен быть код для удаления события из базы данных
-//   try {
-//     await useFetch(`http://localhost:3001/api/admin/slots/${event._id}`, {
-//       method: 'DELETE',
-//     });
-//     loadSlots();
-//   } catch (error) {
-//     console.error('Ошибка при удалении слота:', error);
-//   }
-// };
+const deleteEvent = async event => {
+  console.log('Удаление события:', event);
+  try {
+    if (!event._id) {
+      throw new Error('ID слота отсутствует');
+    }
+
+    const slotExists = slots.value.some(slot => slot._id === event._id);
+    if (!slotExists) {
+      console.warn(`Слот с ID ${event._id} не существует или уже был удален.`);
+      return;
+    }
+
+    console.log('Отправка запроса на удаление:', `http://localhost:3001/api/admin/slots/${event._id}`);
+    const response = await fetch(`http://localhost:3001/api/admin/slots/${event._id}`, {
+      method: 'DELETE',
+    });
+
+    if (response.status === 404) {
+      console.error('Ошибка: слот не найден');
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error(`Ошибка: ${response.status} ${response.statusText}`);
+    }
+
+    await loadSlots(); // Обновляем данные после удаления
+  } catch (error) {
+    console.error('Ошибка при удалении слота:', error);
+  }
+};
 </script>
 
 <style scoped>
-
 .time-column {
-  width: 12.5%
+  width: 12.5%;
 }
 
 .day-column {
-  width: 12.5%
+  width: 12.5%;
 }
 
 .calendar-table {
