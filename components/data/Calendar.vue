@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import {computed, inject, onMounted, ref, watch} from 'vue';
+import {format} from 'date-fns';
+import {ru} from 'date-fns/locale';
 
 interface Slot {
   _id: string;
-  date: string;
-  time: string;
+  datetime: number;
   room: number;
   status: string;
   bookedBy: string | null;
@@ -19,7 +20,10 @@ interface TelegramUserData {
   id: string;
 }
 
-const userData = inject<TelegramUserData | null>('userData');
+// Получаем данные через inject
+const injectedUserData = inject<{ value: TelegramUserData | null }>('userData');
+const userData = ref(injectedUserData?.value || null);
+
 
 const selectedDate = ref(new Date());
 const displayedMonth = ref(new Date().toISOString().slice(0, 7));
@@ -27,13 +31,70 @@ const slots = ref<Slot[]>([]);
 const filteredSlots = ref<Slot[]>([]);
 const selectedTime = ref<string | null>(null);
 const selectedSlot = ref<Slot | null>(null);
+const notificationMessage = ref<string | null>(null);
+const notificationType = ref<'success' | 'error' | null>(null);
+
+// Хранилище для статусов дат
+const dateStatusMap = ref<Record<string, { available: boolean; booked: boolean }>>({});
 
 const availableTimes = computed<{ label: string; value: Slot }[]>(() => {
-  return filteredSlots.value.map(slot => ({
-    label: slot.time,
-    value: slot,
-  }));
+  return filteredSlots.value
+      .slice()  // Создаем копию массива, чтобы не мутировать исходный массив
+      .sort((a, b) => a.datetime - b.datetime)  // Сортируем по возрастанию времени
+      .map(slot => ({
+        label: format(slot.datetime, 'HH:mm', { locale: ru }),
+        value: slot,
+      }));
 });
+
+
+
+// Добавляем новое вычисляемое свойство для разрешенных дат
+const allowedDates = computed(() => {
+  const dateMap = new Map<string, { available: boolean, booked: boolean }>();
+
+  // Формируем карту дат с состояниями "available" и "booked"
+  slots.value.forEach(slot => {
+    const date = format(slot.datetime, 'yyyy-MM-dd');
+
+    if (!dateMap.has(date)) {
+      dateMap.set(date, { available: false, booked: false });
+      console.log(`Добавлена новая дата в карту: ${date}`);
+    }
+
+    const slotStatus = dateMap.get(date);
+
+    if (slot.status === 'available') {
+      slotStatus!.available = true;
+      console.log(`Слот на дату ${date} установлен как available`);
+    } else if (slot.status === 'booked') {
+      slotStatus!.booked = true;
+      console.log(`Слот на дату ${date} установлен как booked`);
+    }
+  });
+
+  // Обновляем глобальную карту статусов дат
+  dateStatusMap.value = Object.fromEntries(dateMap);
+
+  // Разрешаем дату, если есть хотя бы один доступный слот или если все слоты забронированы
+  return (date: string) => {
+    const formattedDate = format(new Date(date), 'yyyy-MM-dd');
+    const slotStatus = dateMap.get(formattedDate);
+    return slotStatus ? slotStatus.available || slotStatus.booked : false;
+  };
+});
+
+// Функция для получения CSS-класса для дней
+const getDayClass = (date: string) => {
+  const formattedDate = format(new Date(date), 'yyyy-MM-dd');
+  const slotStatus = dateStatusMap.value[formattedDate];
+
+  if (slotStatus && slotStatus.available) {
+    return 'available-day';
+  }
+  return '';
+};
+
 
 const massageTypes = computed<{ label: string; value: Slot }[]>(() => {
   const uniqueTypes = new Set<string>();
@@ -54,21 +115,11 @@ const loadSlots = async () => {
     const response = await fetch('http://localhost:3001/api/slots');
     if (response.ok) {
       const data = await response.json();
-      slots.value = data.map((slot: any) => {
-        const date = new Date(slot.datetime * 1000);
-
-        if (isNaN(date.getTime())) {
-          console.error('Неверное значение времени:', slot.datetime);
-          return null;
-        }
-
-        return {
-          ...slot,
-          date: date.toISOString().split('T')[0],
-          time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          _id: typeof slot._id === 'object' && slot._id.$oid ? slot._id.$oid : slot._id,
-        };
-      }).filter(slot => slot !== null);
+      slots.value = data.map((slot: any) => ({
+        ...slot,
+        _id: typeof slot._id === 'object' && slot._id.$oid ? slot._id.$oid : slot._id,
+        datetime: slot.datetime * 1000, // Преобразуем время в миллисекунды
+      }));
       filterSlots();
     } else {
       console.error('Ошибка при загрузке слотов:', response.statusText);
@@ -79,10 +130,10 @@ const loadSlots = async () => {
 };
 
 const filterSlots = () => {
-  const selectedDateValue = selectedDate.value.toISOString().slice(0, 10);
+  const selectedDateValue = format(selectedDate.value, 'yyyy-MM-dd');
 
   filteredSlots.value = slots.value.filter(slot => {
-    const slotDateValue = new Date(slot.date).toISOString().slice(0, 10);
+    const slotDateValue = format(new Date(slot.datetime), 'yyyy-MM-dd');
     const isAvailable = slot.status === 'available';
     return slotDateValue === selectedDateValue && isAvailable;
   });
@@ -92,7 +143,9 @@ const confirmBooking = async (slot: Slot) => {
   const currentSlot = slot;
   if (currentSlot && currentSlot._id) {
     try {
-      const userId = userData?.id || 'unknown_user';
+      const userId = String(userData.value?.user.id) || 'unknown_user';
+      // const userId = userData?.value?.id || 'unknown_user';
+      console.log("XXXX userId", userId)
       const url = `http://localhost:3001/api/slots/${currentSlot._id}/book`;
 
       const response = await fetch(url, {
@@ -110,17 +163,34 @@ const confirmBooking = async (slot: Slot) => {
         currentSlot.status = 'booked';
         currentSlot.bookedBy = userId;
         filterSlots();
-        console.log('Запись успешно выполнена');
+        showNotification('Запись успешно выполнена', 'success');
+        resetSelection();
       } else {
         const result = await response.json();
-        console.error('Ошибка выполнения записи:', result.message);
+        showNotification(`Ошибка выполнения записи: ${result.message}`, 'error');
       }
     } catch (error) {
+      showNotification('Ошибка при записи', 'error');
       console.error('Ошибка при записи:', error);
     }
   } else {
+    showNotification('ID текущего слота не определен', 'error');
     console.error('ID текущего слота не определен');
   }
+};
+
+const showNotification = (message: string, type: 'success' | 'error') => {
+  notificationMessage.value = message;
+  notificationType.value = type;
+  setTimeout(() => {
+    notificationMessage.value = null;
+    notificationType.value = null;
+  }, 2000);
+};
+
+const resetSelection = () => {
+  selectedTime.value = null;
+  selectedSlot.value = null;
 };
 
 onMounted(() => {
@@ -141,12 +211,16 @@ watch(slots, () => {
     <v-row justify="center">
       <v-col cols="12" sm="8" md="6" lg="4">
         <v-date-picker
+            show-adjacent-months
             v-model="selectedDate"
             v-model:displayed-month="displayedMonth"
             :first-day-of-week="1"
-            :locale="'en-CA'"
+            :allowed-dates="allowedDates"
+            :day-class="getDayClass"
             color="primary"
-            class="mb-4"
+            class="mb-4 border-s-thin"
+            width="100%"
+            :border="true"
         ></v-date-picker>
       </v-col>
     </v-row>
@@ -188,6 +262,13 @@ watch(slots, () => {
         <v-alert type="info">На выбранную дату нет свободных записей на массаж.</v-alert>
       </v-col>
     </v-row>
+    <v-row justify="center" v-if="notificationMessage">
+      <v-col cols="12" sm="8" md="6" lg="4">
+        <v-alert :type="notificationType" dismissible>
+          {{ notificationMessage }}
+        </v-alert>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -212,4 +293,10 @@ watch(slots, () => {
   color: #B0BEC5;
   margin-top: 4px;
 }
+
+.available-day {
+  border: 2px solid white;
+  border-radius: 50%;
+}
+
 </style>

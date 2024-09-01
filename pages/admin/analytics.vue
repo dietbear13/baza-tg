@@ -36,48 +36,46 @@
           <v-row>
             <v-col cols="12" md="3">
               <div class="pa-2">
-
-              <v-chip class="mb-2" color="blue" text-color="white">
-                <v-icon left>mdi-calendar-week</v-icon> Текущая неделя
-              </v-chip>
-              <v-row dense>
-                <v-col cols="12">
-                  <p>Всего записей</p>
-                  <v-icon left>mdi-counter</v-icon>
-                  <strong>{{ weeklyStats.total }}</strong>
-                </v-col>
-                <v-col cols="12">
-                  <v-icon left>mdi-clock-start</v-icon>
-                  <strong>{{ weeklyStats.pastCount }}</strong>
-                  <p>Заработано: {{ weeklyStats.pastSum }} ₽</p>
-                </v-col>
-                <v-col cols="12">
-                  <v-icon left>mdi-clock-end</v-icon>
-                  <strong>{{ weeklyStats.futureCount }}</strong>
-                  <p>До конца недели: {{ weeklyStats.futureSum }} ₽</p>
-                </v-col>
-              </v-row>
-            </div>
-
+                <v-chip class="mb-2" color="blue" text-color="white">
+                  <v-icon left>mdi-calendar-week</v-icon> Текущая неделя
+                </v-chip>
+                <v-row dense>
+                  <v-col cols="12">
+                    <p>Всего записей</p>
+                    <v-icon left>mdi-counter</v-icon>
+                    <strong>{{ weeklyStats.total }}</strong>
+                  </v-col>
+                  <v-col cols="12">
+                    <p>Заработано: {{ weeklyStats.pastSum }} ₽</p>
+                    <v-icon left>mdi-clock-start</v-icon>
+                    <strong>{{ weeklyStats.pastCount }}</strong>
+                  </v-col>
+                  <v-col cols="12">
+                    <p>До конца недели: {{ weeklyStats.futureSum }} ₽</p>
+                    <v-icon left>mdi-clock-end</v-icon>
+                    <strong>{{ weeklyStats.futureCount }}</strong>
+                  </v-col>
+                </v-row>
+              </div>
             </v-col>
 
             <v-col cols="12" md="9">
               <div class="pa-2">
-              <v-chip class="mb-2" color="teal" text-color="white">
-                <v-icon left>mdi-calendar-range</v-icon> Статистика по дням
-              </v-chip>
-              <v-row dense>
-                <v-col v-for="(dayStat, index) in dailyStats" :key="index" cols="12" md="6" lg="4">
-                  <v-card class="pa-3 mb-4" outlined>
-                    <v-card-title class="d-flex justify-space-between align-center">
-                      <span><v-icon small color="primary">mdi-calendar-clock</v-icon>
-                      {{ dayStat.label }}</span>
-                    </v-card-title>
-                    <v-card-subtitle class="mb-3">{{ dayStat.count }} записей, {{ dayStat.sum }} ₽</v-card-subtitle>
-                    <v-progress-linear :value="calculateProgress(dayStat.count)" color="primary" height="6" class="mb-2"></v-progress-linear>
-                  </v-card>
-                </v-col>
-              </v-row>
+                <v-chip class="mb-2" color="teal" text-color="white">
+                  <v-icon left>mdi-calendar-range</v-icon> Статистика по дням
+                </v-chip>
+                <v-row dense>
+                  <v-col v-for="(dayStat, index) in dailyStats" :key="index" cols="12" md="6" lg="4">
+                    <v-card class="pa-3 mb-4" outlined>
+                      <v-card-title class="d-flex justify-space-between align-center">
+                        <span><v-icon small color="primary">mdi-calendar-clock</v-icon>
+                        {{ dayStat.label }}</span>
+                      </v-card-title>
+                      <v-card-subtitle class="mb-3">{{ dayStat.count }} записей, {{ dayStat.sum }} ₽</v-card-subtitle>
+                      <v-progress-linear :value="calculateProgress(dayStat.count)" color="primary" height="6" class="mb-2"></v-progress-linear>
+                    </v-card>
+                  </v-col>
+                </v-row>
               </div>
             </v-col>
           </v-row>
@@ -140,10 +138,6 @@ const calculateProgress = (count: number): number => {
   return (count / maxCount.value) * 100;
 };
 
-const calculateSumProgress = (sum: number): number => {
-  return (sum / maxSum.value) * 100;
-};
-
 const totalSlots = computed(() => slots.value.length);
 const bookedSlots = computed(() => slots.value.filter(slot => slot.status === 'booked').length);
 const availableSlots = computed(() => slots.value.filter(slot => slot.status === 'available').length);
@@ -157,14 +151,16 @@ const weeklyStats = computed(() => {
 
   slots.value.forEach(slot => {
     const slotDate = slot.datetime ? new Date(slot.datetime * 1000) : new Date(slot.date as string);
-    const price = slot.massageDetails?.price || 0;
+    const price = slot.status === 'booked' ? slot.massageDetails?.price || 0 : 0;
 
-    if (slotDate < now) {
-      pastCount++;
-      pastSum += price;
-    } else if (slotDate >= now && slotDate <= weekEnd) {
-      futureCount++;
-      futureSum += price;
+    if (slot.status === 'booked') {
+      if (slotDate < now) {
+        pastCount++;
+        pastSum += price;
+      } else if (slotDate >= now && slotDate <= weekEnd) {
+        futureCount++;
+        futureSum += price;
+      }
     }
     if (slotDate >= weekStart && slotDate <= weekEnd) {
       total++;
@@ -179,7 +175,7 @@ const dailyStats = computed<DayStats[]>(() => {
     const dayDate = addDays(weekStart, i);
     const daySlots = slots.value.filter(slot => {
       const slotDate = slot.datetime ? new Date(slot.datetime * 1000) : new Date(slot.date as string);
-      return format(slotDate, 'yyyy-MM-dd') === format(dayDate, 'yyyy-MM-dd');
+      return slot.status === 'booked' && format(slotDate, 'yyyy-MM-dd') === format(dayDate, 'yyyy-MM-dd');
     });
     const dayCount = daySlots.length;
     const daySum = daySlots.reduce((sum, slot) => sum + (slot.massageDetails?.price || 0), 0);

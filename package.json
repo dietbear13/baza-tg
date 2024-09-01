@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@date-io/date-fns": "^3.0.0",
     "@mdi/font": "^7.4.47",
     "@telegram-apps/sdk": "^1.1.3",
     "date-fns": "^3.6.0",

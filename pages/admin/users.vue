@@ -1,35 +1,7 @@
 <template>
-  <div class="admin-layout">
-    <v-navigation-drawer
-        v-model="drawer"
-        app
-        permanent
-        class="bg-deep-purple"
-        theme="dark"
-        width="220"
-    >
-      <v-list color="transparent">
-        <v-list-item
-            v-for="item in menuItems"
-            :key="item.title"
-            :to="item.route"
-            router
-        >
-          <template v-slot:prepend>
-            <v-icon>{{ item.icon }}</v-icon>
-          </template>
-          <v-list-item-title>{{ item.title }}</v-list-item-title>
-        </v-list-item>
-      </v-list>
+  <AdminMenu />
 
-      <template v-slot:append>
-        <div class="pa-2">
-          <v-btn block @click="logout">
-            Logout
-          </v-btn>
-        </div>
-      </template>
-    </v-navigation-drawer>
+  <div class="admin-layout">
 
     <div class="content-wrapper">
       <v-main>
@@ -45,6 +17,7 @@
 <script setup lang="ts">
 import {ref} from 'vue';
 import {useRouter} from 'vue-router';
+import AdminMenu from "@/components/admin/AdminMenu.vue";
 
 const drawer = ref(true);
 const router = useRouter();
