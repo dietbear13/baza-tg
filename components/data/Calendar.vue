@@ -2,6 +2,7 @@
 import {computed, inject, onMounted, ref, watch} from 'vue';
 import {format} from 'date-fns';
 import {ru} from 'date-fns/locale';
+import {useRuntimeConfig} from "nuxt/app";
 
 interface Slot {
   _id: string;
@@ -33,6 +34,7 @@ const selectedTime = ref<string | null>(null);
 const selectedSlot = ref<Slot | null>(null);
 const notificationMessage = ref<string | null>(null);
 const notificationType = ref<'success' | 'error' | null>(null);
+const config  = useRuntimeConfig();
 
 // Хранилище для статусов дат
 const dateStatusMap = ref<Record<string, { available: boolean; booked: boolean }>>({});
@@ -112,7 +114,7 @@ const massageTypes = computed<{ label: string; value: Slot }[]>(() => {
 
 const loadSlots = async () => {
   try {
-    const response = await fetch('http://localhost:3001/api/slots');
+    const response = await fetch(`${process.env.VUE_APP_API_URL}/slots`);
     if (response.ok) {
       const data = await response.json();
       slots.value = data.map((slot: any) => ({
@@ -145,7 +147,7 @@ const confirmBooking = async (slot: Slot) => {
     try {
       const userId = String(userData.value?.user.id) || 'unknown_user';
       // const userId = userData?.value?.id || 'unknown_user';
-      const url = `http://localhost:3001/api/slots/${currentSlot._id}/book`;
+      const url = `${process.env.VUE_APP_API_URL}/slots/${currentSlot._id}/book`;
 
       const response = await fetch(url, {
         method: 'POST',

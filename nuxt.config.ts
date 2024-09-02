@@ -9,17 +9,20 @@ export default defineNuxtConfig({
 
     ssr: false,
     runtimeConfig: {
-        apiSecret: '',
         // Переменные окружения, которые будут доступны и на клиенте, и на сервере
         public: {
-            telegramBotApiKey: 'NUXT_TELEGRAM_BOT_API_KEY',
+            telegramBotApiKey: process.env.TELEGRAM_BOT_API_KEY || '',
+            vueAppApiUrl : process.env.VUE_APP_API_URL || ''
+
         }
     },
 
     app: {
         head: {
             meta: [
-                { hid: 'robots', name: 'robots', content: 'noindex, nofollow' }
+                { hid: 'robots', name: 'robots', content: 'noindex, nofollow' },
+                { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' },
+
             ],
             script: [
                 {

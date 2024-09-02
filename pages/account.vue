@@ -65,6 +65,7 @@
 <script setup lang="ts">
 import {inject, onMounted, ref} from 'vue';
 import UserSettings from "@/components/data/UserSettings.vue"; // Импортируем компонент UserSettings
+import {useRuntimeConfig} from 'nuxt/app';
 
 interface Slot {
   _id: string;
@@ -108,8 +109,8 @@ const dialogMessage = ref('');
 let currentSlot: Slot | null = null;
 
 
-const { config } = useRuntimeConfig();
-const apiKey = config.telegramBotApiKey;
+const config  = useRuntimeConfig();
+const apiKey = config.public.telegramBotApiKey;
 
 console.log("0000 apiKey", apiKey)
 
@@ -148,8 +149,8 @@ const loadBookedSlots = async () => {
 };
 
 // Форматирование даты в формате ДД.ММ.ГГГГ
-const formatDate = (datetime: number) => {
-  return new Date(datetime * 1000).toLocaleDateString('ru-RU', {
+const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString('ru-RU', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -157,11 +158,8 @@ const formatDate = (datetime: number) => {
 };
 
 // Форматирование времени в формате ЧЧ:ММ
-const formatTime = (datetime: number) => {
-  return new Date(datetime * 1000).toLocaleTimeString('ru-RU', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+const formatTime = (time: string) => {
+  return time.slice(0, 5);
 };
 
 // Подтверждение отмены записи

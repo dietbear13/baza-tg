@@ -40,13 +40,15 @@ onMounted(() => {
   console.log('mounted', tgObj);
   console.log('mounted initDataUnsafe', userData.value);
   sendUserDataToServer(); // Отправляем данные пользователя на сервер при монтировании компонента
+  tgObj.WebApp.expand();
+  tgObj.WebApp.setHeaderColor('#252525');
+
 });
 
 // Provide userData and store to the whole application
 provide('userData', userData);
 provide(key, store);
 </script>
-
 <template>
   <NuxtLayout>
     <v-app>
