@@ -8,6 +8,13 @@ export default defineNuxtConfig({
     ],
 
     ssr: false,
+    runtimeConfig: {
+        apiSecret: '',
+        // Переменные окружения, которые будут доступны и на клиенте, и на сервере
+        public: {
+            telegramBotApiKey: 'NUXT_TELEGRAM_BOT_API_KEY',
+        }
+    },
 
     app: {
         head: {

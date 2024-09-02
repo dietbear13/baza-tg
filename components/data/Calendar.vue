@@ -145,7 +145,6 @@ const confirmBooking = async (slot: Slot) => {
     try {
       const userId = String(userData.value?.user.id) || 'unknown_user';
       // const userId = userData?.value?.id || 'unknown_user';
-      console.log("XXXX userId", userId)
       const url = `http://localhost:3001/api/slots/${currentSlot._id}/book`;
 
       const response = await fetch(url, {
@@ -218,7 +217,7 @@ watch(slots, () => {
             :allowed-dates="allowedDates"
             :day-class="getDayClass"
             color="primary"
-            class="mb-4 border-s-thin"
+            class="mb-4 border-s-thin pa-sm-0"
             width="100%"
             :border="true"
         ></v-date-picker>
@@ -233,7 +232,7 @@ watch(slots, () => {
             color="primary"
             item-title="label"
             item-value="value"
-            class="mb-4"
+            class="mb-4 pa-sm-0"
         ></v-select>
       </v-col>
     </v-row>
@@ -246,7 +245,7 @@ watch(slots, () => {
             color="primary"
             item-title="label"
             item-value="value"
-            class="mb-4"
+            class="mb-4 pa-sm-0"
         ></v-select>
       </v-col>
     </v-row>

@@ -14,7 +14,6 @@
             dense
         ></v-select>
       </v-col>
-
       <v-col cols="12" md="3">
         <v-time-picker
             v-model="startTime"
@@ -23,6 +22,7 @@
             full-width
             outlined
             dense
+            class="mb-0"
         ></v-time-picker>
       </v-col>
       <v-col cols="12" md="3">

@@ -1,14 +1,15 @@
 <template>
   <v-container>
-    <v-row justify="space-between" align="center">
-      <h1>Ваши записи на массаж</h1>
-      <v-btn icon @click="openSettings">
+    <v-row justify="center">
+      <h1>Ваши записи</h1>
+      <v-btn icon @click="openSettings" justify="right" color="primary">
         <v-icon>mdi-cog</v-icon>
       </v-btn>
     </v-row>
-    <v-row>
-      <v-col cols="12">
-        <v-list>
+
+    <v-row justify="center">
+      <v-col cols="12" sm="8" md="6" lg="4">
+        <v-list dense>
           <v-list-item
               v-for="slot in bookedSlots"
               :key="slot._id"
@@ -60,6 +61,7 @@
   </v-container>
 </template>
 
+
 <script setup lang="ts">
 import {inject, onMounted, ref} from 'vue';
 import UserSettings from "@/components/data/UserSettings.vue"; // Импортируем компонент UserSettings
@@ -67,7 +69,7 @@ import UserSettings from "@/components/data/UserSettings.vue"; // Импорти
 interface Slot {
   _id: string;
   date: string;
-  time: string;
+  time: number;
   room: number;
   status: string;
   bookedBy: string | null;
@@ -105,12 +107,15 @@ const dialogTitle = ref('');
 const dialogMessage = ref('');
 let currentSlot: Slot | null = null;
 
-console.log("!!! injectedUserData", injectedUserData);
-console.log("!!! userData", userData);
+
+const { config } = useRuntimeConfig();
+const apiKey = config.telegramBotApiKey;
+
+console.log("0000 apiKey", apiKey)
 
 const fetchUserInfo = async (userId: number) => {
   try {
-    const response = await fetch(`https://api.telegram.org/botXXX/getChat`, {
+    const response = await fetch(`https://api.telegram.org/bot${apiKey}/getChat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: userId }),
@@ -128,12 +133,9 @@ const loadBookedSlots = async () => {
     const response = await fetch('http://localhost:3001/api/slots');
     if (response.ok) {
       const data = await response.json();
-      console.log("++ Записи, полученные с сервера:", data); // Логируем все полученные данные
       const userId = String(userData.value?.user.id);
-      console.log("++ Текущий userId:", userId); // Логируем текущий userId
       bookedSlots.value = data.filter((slot: Slot) => {
         const isMatch = String(slot.bookedBy) === userId;
-        console.log(`-- Сопоставление слота ${slot._id} с userId: ${isMatch}`); // Логируем результат сопоставления
         return isMatch;
       });
       console.log("++ Отфильтрованные записи пользователя:", bookedSlots.value); // Логируем отфильтрованные записи
@@ -146,8 +148,8 @@ const loadBookedSlots = async () => {
 };
 
 // Форматирование даты в формате ДД.ММ.ГГГГ
-const formatDate = (date: string) => {
-  return new Date(date).toLocaleDateString('ru-RU', {
+const formatDate = (datetime: number) => {
+  return new Date(datetime * 1000).toLocaleDateString('ru-RU', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -155,8 +157,11 @@ const formatDate = (date: string) => {
 };
 
 // Форматирование времени в формате ЧЧ:ММ
-const formatTime = (time: string) => {
-  return time.slice(0, 5);
+const formatTime = (datetime: number) => {
+  return new Date(datetime * 1000).toLocaleTimeString('ru-RU', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 };
 
 // Подтверждение отмены записи

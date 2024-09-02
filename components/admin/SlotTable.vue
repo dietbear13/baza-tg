@@ -540,11 +540,13 @@ const editEvent = (event: any) => {
   console.log('Редактирование события:', event);
   // Здесь может быть вызов формы редактирования
 };
+const apiKey = process.env.VUE_APP_TELEGRAM_BOT_API_KEY;
+
 
 // Запрос данных пользователя из Telegram API
 const fetchUserInfo = async (userId: string) => {
   try {
-    const data = await fetch('https://api.telegram.org/botXXX/getChat', {
+    const data = await fetch(`https://api.telegram.org/bot${apiKey}/getChat`, {
     method: 'POST',
         headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: userId }),
