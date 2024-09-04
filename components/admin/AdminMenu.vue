@@ -6,6 +6,9 @@
         <v-list-item-title>{{ item.title }}</v-list-item-title>
       </v-list-item>
     </v-list>
+    <div>
+      Статус: {{ store.state.isAuthenticated ? "Авторизован" : "Не авторизован" }}
+    </div>
 
     <!-- Кнопка выхода -->
     <template v-slot:append>
@@ -19,17 +22,24 @@
 </template>
 
 <script setup>
+
 import {computed, ref} from 'vue';
 import {useRouter} from 'vue-router';
 import {useStore} from 'vuex';
 import {key} from '@/store';
 
+const store = useStore(key); // Используем ключ для инъекции store
+const isAuthenticated = computed(() => store.state.isAuthenticated);
+const userRole = computed(() => store.state.userRole);
+
 const drawer = ref(true);
 const router = useRouter();
-const store = useStore(key);
 
-// Получение роли пользователя из Vuex
-const userRole = computed(() => store.state.userRole); // Убедитесь, что в store хранится роль пользователя
+
+definePageMeta({
+  middleware: 'auth'
+});
+
 
 // Меню в зависимости от роли пользователя
 const menuItems = computed(() => {
@@ -45,6 +55,7 @@ const menuItems = computed(() => {
   return baseItems;
 });
 
+
 // Логика выхода из системы
 const logout = async () => {
   try {
@@ -55,7 +66,7 @@ const logout = async () => {
       // Обновляем состояние авторизации в Vuex
       store.commit('setAuthentication', false);
       store.commit('setUserRole', null);
-      router.push('/login');
+      router.push('/login'); // Перенаправление на страницу логина
     } else {
       console.error('Ошибка при выходе из системы');
     }

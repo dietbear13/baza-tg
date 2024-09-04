@@ -4,6 +4,7 @@ import {key, store} from '@/store'; // Импортируем store и ключ
 import FooterMenu from '../test-bot/components/ui/FooterMenu.vue';
 import {useRuntimeConfig} from "nuxt/app";
 
+
 const config  = useRuntimeConfig();
 
 let tgObj = window.Telegram;

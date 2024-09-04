@@ -154,6 +154,11 @@
 </template>
 
 <script setup lang="ts">
+
+definePageMeta({
+  middleware: 'auth'
+});
+
 import {computed, onMounted, ref} from 'vue';
 import {addDays, format, fromUnixTime, setHours, setMinutes, setSeconds, startOfWeek} from 'date-fns';
 import {ru} from 'date-fns/locale';

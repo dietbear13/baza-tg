@@ -13,10 +13,18 @@
 
 <script setup>
 import AdminMenu from '../../components/admin/AdminMenu.vue';
+import {useStore} from 'vuex';
+import {key} from '@/store'; // Подключение ключа
+
+const store = useStore(key); // Используем ключ для инъекции store
+const isAuthenticated = computed(() => store.state.isAuthenticated);
+const userRole = computed(() => store.state.userRole);
 
 definePageMeta({
   middleware: 'auth'
 });
+
+
 
 </script>
 
