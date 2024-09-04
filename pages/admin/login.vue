@@ -1,36 +1,25 @@
 <script setup lang="ts">
 import {inject, ref} from 'vue';
 import {useRouter} from 'vue-router';
+import {useStore} from 'vuex';
 import {key} from '@/store'; // Импортируем ключ
 
 // Инжектируем store через ключ
-const store = inject(key);
-
-// Выводим store для отладки
-console.log("store перед отправкой", store);
+const store = useStore(key) || inject(key); // используем Vuex хранилище
+// const store = inject(key);
 
 if (!store) {
   throw new Error('Store не был предоставлен');
 }
 
-// Переменные для имени пользователя и пароля
 const username = ref('');
 const password = ref('');
 const router = useRouter();
 
-// Логика для входа
 const login = async () => {
   try {
-    // Еще раз проверяем store перед вызовом login
-    if (!store) {
-      console.error('Store не найден при отправке формы');
-      return;
-    }
-
-    // Выполняем действие login в хранилище Vuex
     const success = await store.dispatch('login', { username: username.value, password: password.value });
 
-    // Если успешный логин, перенаправляем на админскую панель
     if (success) {
       await router.push('/admin');
     } else {

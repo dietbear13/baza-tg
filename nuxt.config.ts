@@ -71,7 +71,10 @@ export default defineNuxtConfig({
 
     ],
 
-    plugins: ['~/plugins/vuetify'],
+    plugins: [
+        '~/plugins/vuetify',
+        '~/plugins/vuex',
+    ],
 
     vite: {
         vue: {
