@@ -65,9 +65,9 @@
           <th v-for="day in weekDays" :key="day.dateFormatted" class="day-column">
             <v-menu offset-y>
               <template v-slot:activator="{ on, attrs }">
-            <span v-bind="attrs" v-on="on" class="header-menu-trigger">
-              {{ day.label }},<br>{{ day.dateFormatted }}
-            </span>
+                  <span v-bind="attrs" v-on="on" class="header-menu-trigger">
+                    {{ day.label }},<br />{{ day.dateFormatted }}
+                  </span>
               </template>
 
               <v-list>
@@ -91,50 +91,56 @@
           <td class="time-column">{{ timeSlot }}</td>
           <td v-for="day in weekDays" :key="day.dateFormatted" class="day-column">
             <div class="day-events">
-              <span v-if="day.events.length === 0"></span>
-              <span v-else>
-                <!-- Внутри <v-menu> -->
-                <!-- Внутри <v-menu> для каждого слота -->
-                <v-menu
-                    v-for="event in day.events.filter(event => format(event.start, 'yyyy-MM-dd HH:mm') === format(new Date(day.date.getTime() + (parseInt(timeSlot.split(':')[0]) * 3600000) + (parseInt(timeSlot.split(':')[1]) * 60000)), 'yyyy-MM-dd HH:mm'))"
-                    :key="event.name + event.start"
-                    close-on-content-click
-                >
-                  <template v-slot:activator="{ props }">
-                    <v-chip
-                        v-bind="props"
-                        :color="event.color"
-                        class="mb-2"
-                        small
-                    >
-                      {{ event.name }}
-                    </v-chip>
-                  </template>
+              <v-skeleton-loader
+                  v-if="loading"
+                  type="list-item"
+                  height="20px"
+                  width="100%"
+              ></v-skeleton-loader>
 
-                  <v-list>
-                    <template v-if="event.bookedBy">
-                      <v-list-item>
-                        <v-list-item-title>Имя: {{ getUserInfo(event.bookedBy)?.first_name || '...' }} {{ getUserInfo(event.bookedBy)?.last_name || '...' }}</v-list-item-title>
-                      </v-list-item>
-                      <v-list-item>
-                        <v-list-item-title>
-                          Ник: <a :href="`https://t.me/${getUserInfo(event.bookedBy)?.username}`" target="_blank">
-                            @{{ getUserInfo(event.bookedBy)?.username || '...' }}
-                          </a>
-                        </v-list-item-title>
-                      </v-list-item>
-                      <v-divider></v-divider>
-                      <v-list-item @click="releaseSlot(event)">
-                        <v-list-item-title>Освободить</v-list-item-title>
-                      </v-list-item>
+              <span v-else-if="day.events.length === 0"></span>
+
+              <span v-else>
+                  <v-menu
+                      v-for="event in day.events.filter(event => format(event.start, 'yyyy-MM-dd HH:mm') === format(new Date(day.date.getTime() + (parseInt(timeSlot.split(':')[0]) * 3600000) + (parseInt(timeSlot.split(':')[1]) * 60000)), 'yyyy-MM-dd HH:mm'))"
+                      :key="event.name + event.start"
+                      close-on-content-click
+                  >
+                    <template v-slot:activator="{ props }">
+                      <v-chip
+                          v-bind="props"
+                          :color="event.color"
+                          class="mb-2"
+                          small
+                      >
+                        {{ event.name }}
+                      </v-chip>
                     </template>
 
-                    <v-list-item @click="deleteEvent(event)">
-                      <v-list-item-title>Удалить</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
-              </span>
+                    <v-list>
+                      <template v-if="event.bookedBy">
+                        <v-list-item>
+                          <v-list-item-title>Имя: {{ getUserInfo(event.bookedBy)?.first_name || '...' }} {{ getUserInfo(event.bookedBy)?.last_name || '...' }}</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item>
+                          <v-list-item-title>
+                            Ник: <a :href="`https://t.me/${getUserInfo(event.bookedBy)?.username}`" target="_blank">
+                              @{{ getUserInfo(event.bookedBy)?.username || '...' }}
+                            </a>
+                          </v-list-item-title>
+                        </v-list-item>
+                        <v-divider></v-divider>
+                        <v-list-item @click="releaseSlot(event)">
+                          <v-list-item-title>Освободить</v-list-item-title>
+                        </v-list-item>
+                      </template>
+
+                      <v-list-item @click="deleteEvent(event)">
+                        <v-list-item-title>Удалить</v-list-item-title>
+                      </v-list-item>
+                    </v-list>
+                  </v-menu>
+                </span>
             </div>
           </td>
         </tr>
@@ -154,6 +160,8 @@
 </template>
 
 <script setup lang="ts">
+// Логика загрузки данных и состояние загрузки
+const loading = ref(true);
 
 definePageMeta({
   middleware: 'auth'
@@ -409,8 +417,9 @@ const loadSlots = async () => {
   }
 };
 
-onMounted(() => {
-  loadSlots();
+onMounted(async () => {
+  await loadSlots();
+  loading.value = false; // Отключаем skeleton после загрузки
 });
 
 const generateTimeSlots = () => {

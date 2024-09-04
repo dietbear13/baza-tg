@@ -14,9 +14,9 @@
 <script setup>
 import AdminMenu from '../../components/admin/AdminMenu.vue';
 import {useStore} from 'vuex';
-import {key} from '@/store'; // Подключение ключа
+import {key} from '@/store';
 
-const store = useStore(key); // Используем ключ для инъекции store
+const store = useStore(key);
 const isAuthenticated = computed(() => store.state.isAuthenticated);
 const userRole = computed(() => store.state.userRole);
 

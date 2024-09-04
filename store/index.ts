@@ -19,6 +19,7 @@ interface LoginResponse {
 interface ValidateTokenResponse {
     success: boolean;
     role: string;
+    token: string;
 }
 
 // Создайте ключ для инъекции
@@ -65,13 +66,14 @@ const store = createStore<State>({
                     method: 'POST',
                     body: {
                         username: login,
-                        password
-                    }
+                        password,
+                    },
                 });
 
+                console.log("Ответ сервера:", response); // Проверьте, что содержится в response
                 const { success, role, token } = response;
+                console.log("Полученный токен:", token); // Проверка наличия токена
 
-                console.log("Полученный токен:", token); // Проверьте, есть ли значение токена
 
                 if (success) {
                     commit('setAuthentication', { isAuthenticated: success, token });
