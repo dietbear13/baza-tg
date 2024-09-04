@@ -5,7 +5,7 @@ import FooterMenu from '../test-bot/components/ui/FooterMenu.vue';
 import {useRuntimeConfig} from "nuxt/app";
 
 onMounted(() => {
-  store.dispatch('tryAutoLogin'); // Восстанавливаем авторизацию, если есть токен
+  store.dispatch('tryAutoLogin');
 });
 
 // Передаем ключ и store через provide

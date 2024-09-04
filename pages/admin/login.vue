@@ -30,6 +30,8 @@ const login = async () => {
     console.error('Ошибка при выполнении входа:', error);
   }
 };
+
+
 </script>
 
 <template>

@@ -35,6 +35,7 @@ const store = createStore<State>({
     mutations: {
         // Обновление состояния аутентификации и токена
         setAuthentication(state, { isAuthenticated, token }: { isAuthenticated: boolean, token: string | null }) {
+            console.log('Updating authentication state:', { isAuthenticated, token });
             state.isAuthenticated = isAuthenticated;
             state.token = token;
 
@@ -47,10 +48,12 @@ const store = createStore<State>({
         },
         // Устанавливает роль пользователя
         setUserRole(state, role: string | null) {
+            console.log('Updating user role:', role);  // Логирование обновления роли
             state.userRole = role;
         },
         // Обновление ошибок API
         setApiError(state, error: string | null) {
+            console.log('Updating API error state:', error);  // Логирование ошибок API
             state.apiError = error;
         }
     },
@@ -58,22 +61,20 @@ const store = createStore<State>({
         // Логин
         async login({ commit }, { username: login, password }): Promise<boolean> {
             try {
-                // Указываем тип данных, которые ожидаем от API
                 const response: LoginResponse = await $fetch<LoginResponse>('http://localhost:3001/api/admin/login', {
                     method: 'POST',
                     body: {
                         username: login,
                         password
-                    },
-                    credentials: 'include'
+                    }
                 });
 
                 const { success, role, token } = response;
 
-                // Если успешная аутентификация
-                commit('setAuthentication', { isAuthenticated: success, token });
+                console.log("Полученный токен:", token); // Проверьте, есть ли значение токена
+
                 if (success) {
-                    commit('setApiError', null);
+                    commit('setAuthentication', { isAuthenticated: success, token });
                     commit('setUserRole', role); // Сохраняем роль пользователя
                     return true;
                 } else {
@@ -90,19 +91,22 @@ const store = createStore<State>({
 
         // Восстановление авторизации
         async tryAutoLogin({ commit }) {
-            // Извлекаем токен из cookie
             const authToken = document.cookie
                 .split('; ')
                 .find(row => row.startsWith('authToken='))
                 ?.split('=')[1];
 
+            console.log('authToken from cookie:', authToken);  // Логируем токен для проверки
+
             if (authToken) {
                 try {
-                    // Указываем тип данных, которые ожидаем от API
                     const response: ValidateTokenResponse = await $fetch<ValidateTokenResponse>('http://localhost:3001/api/validateToken', {
                         method: 'POST',
                         body: { token: authToken },
+                        credentials: 'include',
                     });
+
+                    console.log('Token validation response:', response);  // Логируем ответ сервера
 
                     const { success, role } = response;
 
@@ -113,8 +117,11 @@ const store = createStore<State>({
                         commit('setAuthentication', { isAuthenticated: false, token: null });
                     }
                 } catch (error) {
+                    console.error('Error during token validation:', error);
                     commit('setAuthentication', { isAuthenticated: false, token: null });
                 }
+            } else {
+                console.log('No auth token found in cookies');
             }
         },
 
