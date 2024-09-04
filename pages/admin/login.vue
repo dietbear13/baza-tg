@@ -1,3 +1,39 @@
+<script setup lang="ts">
+import {inject, ref} from 'vue';
+import {useRouter} from 'vue-router';
+import {key} from '@/store'; // Импортируем ключ
+
+const store = inject(key);
+
+// Инжектируем store через ключ
+console.log("store", store);
+if (!store) {
+  throw new Error('Store не был предоставлен');
+}
+
+// Переменные для имени пользователя и пароля
+const username = ref('');
+const password = ref('');
+const router = useRouter();
+
+// Логика для входа
+const login = async () => {
+  try {
+    // Выполняем действие login в хранилище Vuex
+    const success = await store.dispatch('login', { username: username.value, password: password.value });
+
+    // Если успешный логин, перенаправляем на админскую панель
+    if (success) {
+      await router.push('/admin');
+    } else {
+      console.error('Неправильное имя пользователя или пароль');
+    }
+  } catch (error) {
+    console.error('Ошибка при выполнении входа:', error);
+  }
+};
+</script>
+
 <template>
   <v-container>
     <v-row justify="center">
@@ -16,29 +52,3 @@
     </v-row>
   </v-container>
 </template>
-
-<script setup lang="ts">
-import {ref} from 'vue';
-import {useRouter} from 'vue-router';
-import {useStore} from 'vuex';
-import {key} from '@/store';
-
-const store = useStore(key);
-const username = ref('');
-const password = ref('');
-const router = useRouter();
-
-const login = async () => {
-  try {
-    const success = await store.dispatch('login', { username: username.value, password: password.value });
-
-    if (success) {
-      await router.push('/admin');
-    } else {
-      console.error('Неправильное имя пользователя или пароль');
-    }
-  } catch (error) {
-    console.error('Ошибка при выполнении входа:', error);
-  }
-};
-</script>

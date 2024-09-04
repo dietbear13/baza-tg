@@ -39,10 +39,10 @@ const store = createStore<State>({
                 // Отправка данных на сервер
                 const { success, role } = await $fetch('http://localhost:3001/api/admin/login', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ username: login, password }),
+                    body: {
+                        username: login,
+                        password
+                    }
                 });
 
                 // Если успешная аутентификация

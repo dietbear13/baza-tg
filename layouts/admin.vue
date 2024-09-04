@@ -10,6 +10,13 @@
 
 <script setup lang="ts">
 import AdminMenu from '@/components/admin/AdminMenu.vue'; // Убедитесь, что путь корректен
+import {computed} from 'vue';
+import {useStore} from 'vuex';
+import {key} from '@/store';
+
+const store = useStore(key);
+const isAuthenticated = computed(() => store.state.isAuthenticated);
+
 </script>
 
 <style scoped>

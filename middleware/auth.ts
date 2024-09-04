@@ -1,16 +1,19 @@
 import {defineNuxtRouteMiddleware, navigateTo} from 'nuxt/app';
 import {useStore} from 'vuex';
+import {key} from '@/store';
 
 export default defineNuxtRouteMiddleware((to) => {
-    const store = useStore();
+    console.log("key", key);
+    const store = useStore(key); // Использование ключа
+
+    // Логирование состояния для проверки
+    console.log("Store state:", store.state);
 
     if (!store || !store.state) {
         console.error("Store или state не доступны.");
         return;
     }
 
-    // Логирование состояния для проверки
-    console.log("Store state:", store.state);
 
     // Проверка аутентификации
     if (!store.state.isAuthenticated) {

@@ -4,6 +4,9 @@ import {key, store} from '@/store'; // Импортируем store и ключ
 import FooterMenu from '../test-bot/components/ui/FooterMenu.vue';
 import {useRuntimeConfig} from "nuxt/app";
 
+// Передаем ключ и store через provide
+provide(key, store);
+
 
 const config  = useRuntimeConfig();
 
