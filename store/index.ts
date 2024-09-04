@@ -8,6 +8,7 @@ export interface State {
     userRole: string | null;
 }
 
+
 // Создайте ключ для инъекции
 export const key: InjectionKey<Store<State>> = Symbol('vuex-key');
 
