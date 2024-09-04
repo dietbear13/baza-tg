@@ -2,11 +2,10 @@
 import {inject, ref} from 'vue';
 import {useRouter} from 'vue-router';
 import {useStore} from 'vuex';
-import {key} from '@/store'; // Импортируем ключ
+import {key} from '@/store';
 
 // Инжектируем store через ключ
-const store = useStore(key) || inject(key); // используем Vuex хранилище
-// const store = inject(key);
+const store = useStore(key) || inject(key);
 
 if (!store) {
   throw new Error('Store не был предоставлен');
@@ -18,6 +17,8 @@ const router = useRouter();
 
 const login = async () => {
   try {
+    console.log('Sending credentials:', { username: username.value, password: password.value });
+
     const success = await store.dispatch('login', { username: username.value, password: password.value });
 
     if (success) {
