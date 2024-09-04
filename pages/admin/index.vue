@@ -13,6 +13,11 @@
 
 <script setup>
 import AdminMenu from '../../components/admin/AdminMenu.vue';
+
+definePageMeta({
+  middleware: 'auth'
+});
+
 </script>
 
 <style scoped>

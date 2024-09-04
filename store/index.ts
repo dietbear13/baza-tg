@@ -1,34 +1,43 @@
 import {createStore, Store} from 'vuex';
 import {InjectionKey} from 'vue';
 
-
-// Определите интерфейс для состояния
+// Интерфейс состояния
 export interface State {
     isAuthenticated: boolean;
     apiError: string | null;
+    userRole: string | null;
 }
 
-// Создайте уникальный ключ инъекции
+// Создайте ключ для инъекции
 export const key: InjectionKey<Store<State>> = Symbol('vuex-key');
 
-// Создайте store
+// Store
 const store = createStore<State>({
     state: {
-        isAuthenticated: false,
-        apiError: null,
+        isAuthenticated: false, // По умолчанию пользователь не авторизован
+        apiError: null, // Ошибки API
+        userRole: null, // Роль пользователя
     },
     mutations: {
+        // Обновление состояния аутентификации
         setAuthentication(state, isAuthenticated) {
             state.isAuthenticated = isAuthenticated;
         },
+        // Устанавливает роль пользователя
+        setUserRole(state, role) {
+            state.userRole = role;
+        },
+        // Обновление ошибок API
         setApiError(state, error) {
             state.apiError = error;
         }
     },
     actions: {
+        // Логин
         async login({ commit }, { username: login, password }) {
             try {
-                const {success} = await $fetch('http://localhost:3001/api/admin/login', {
+                // Отправка данных на сервер
+                const { success, role } = await $fetch('http://localhost:3001/api/admin/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -36,12 +45,11 @@ const store = createStore<State>({
                     body: JSON.stringify({ username: login, password }),
                 });
 
-
-                console.log("data", success)
+                // Если успешная аутентификация
                 commit('setAuthentication', success);
                 if (success) {
-                    commit('setAuthentication', true);
                     commit('setApiError', null);
+                    commit('setUserRole', role); // Сохраняем роль пользователя
                     return true;
                 } else {
                     commit('setAuthentication', false);
@@ -54,8 +62,27 @@ const store = createStore<State>({
                 throw error;
             }
         },
+
+        // Логика выхода из системы
+        async logout({ commit }) {
+            try {
+                // Отправляем запрос на выход
+                const response = await $fetch('http://localhost:3001/api/admin/logout', {
+                    method: 'POST',
+                });
+
+                if (response.ok) {
+                    // Сбрасываем авторизацию и роль пользователя
+                    commit('setAuthentication', false);
+                    commit('setUserRole', null);
+                } else {
+                    console.error('Ошибка при выходе из системы');
+                }
+            } catch (error) {
+                console.error('Ошибка при выполнении выхода:', error);
+            }
+        }
     },
 });
 
-// Экспортируем store и ключ инъекции
 export { store };

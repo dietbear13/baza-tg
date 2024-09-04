@@ -86,6 +86,10 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  middleware: 'auth'
+});
+
 import AdminMenu from '~/components/admin/AdminMenu.vue';
 import {computed, onMounted, ref} from 'vue';
 import {addDays, endOfWeek, format, startOfWeek} from 'date-fns';

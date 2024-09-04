@@ -15,5 +15,7 @@
 import AdminMenu from '~/components/admin/AdminMenu.vue';
 import SlotTable from '~/components/admin/SlotTable.vue';
 
-const activeTab = ref(0);
+definePageMeta({
+  middleware: 'auth'
+});
 </script>
