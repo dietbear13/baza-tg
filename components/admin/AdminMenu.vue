@@ -2,7 +2,13 @@
   <v-navigation-drawer v-model="drawer" app permanent class="bg-deep-purple" theme="dark" :width="drawerWidth">
     <!-- Список меню -->
     <v-list color="transparent">
-      <v-list-item v-for="item in menuItems" :key="item.title" :to="item.route" router>
+      <v-list-item
+          v-for="item in menuItems"
+          :key="item.title"
+          :to="item.route"
+          router
+          active-class="active-item"
+      >
         <v-icon>{{ item.icon }}</v-icon>
         <v-list-item-title>{{ item.title }}</v-list-item-title>
       </v-list-item>
@@ -20,6 +26,7 @@
   </v-navigation-drawer>
 </template>
 
+
 <script setup>
 import {computed, ref} from 'vue';
 import {useRouter} from 'vue-router';
@@ -34,7 +41,7 @@ const drawer = ref(true);
 const router = useRouter();
 
 // Динамическая ширина меню (на 30px больше контента)
-const contentWidth = 190; // Ширина контента (например, 190px)
+const contentWidth = 100; // Ширина контента (например, 190px)
 const drawerWidth = ref(contentWidth + 30); // Ширина меню на 30px шире контента
 
 // Меню в зависимости от роли пользователя
@@ -89,5 +96,15 @@ const logout = async () => {
 
 .logout-button .v-icon {
   margin-right: 10px;
+}
+
+/* Стиль для активного элемента меню */
+.active-item {
+  background-color: #27635c !important; /* Зеленый фон для активного элемента */
+  color: white !important; /* Белый цвет текста */
+}
+
+.active-item .v-icon {
+  color: white !important; /* Белый цвет иконки для активного элемента */
 }
 </style>
