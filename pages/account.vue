@@ -111,8 +111,9 @@ let currentSlot: Slot | null = null;
 
 const config  = useRuntimeConfig();
 const apiKey = config.public.telegramBotApiKey;
+const apiBaseUrl = config.public.telegramBotApiBaseUrl;
 
-console.log("0000 apiKey", apiKey)
+console.log("0000 apiBaseUrl", apiBaseUrl)
 
 const fetchUserInfo = async (userId: number) => {
   try {
@@ -131,7 +132,7 @@ const fetchUserInfo = async (userId: number) => {
 
 const loadBookedSlots = async () => {
   try {
-    const response = await fetch('http://localhost:3001/api/slots');
+    const response = await fetch(`api/slots`);
     if (response.ok) {
       const data = await response.json();
       const userId = String(userData.value?.user.id);
@@ -174,7 +175,7 @@ const confirmCancellation = (slot: Slot) => {
 const cancelBooking = async () => {
   if (currentSlot && currentSlot._id) {
     try {
-      const url = `http://localhost:3001/api/slots/${currentSlot._id}/cancel`;
+      const url = `/api/slots/${currentSlot._id}/cancel`;
       const userId = String(userData.value?.user.id) || 'unknown_user';
 
       const response = await fetch(url, {

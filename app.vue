@@ -2,6 +2,9 @@
 import {computed, onMounted, provide} from 'vue';
 import {key, store} from '@/store'; // Импортируем store и ключ
 import FooterMenu from '../test-bot/components/ui/FooterMenu.vue';
+import {useRuntimeConfig} from "nuxt/app";
+
+const config  = useRuntimeConfig();
 
 let tgObj = window.Telegram;
 
@@ -10,7 +13,7 @@ function sendUserDataToServer() {
   console.log('Attempting to send user data to server. User:', user);
 
   if (user?.id) {
-    fetch('http://localhost:3001/api/users', {
+    fetch(`${config.public.apiBaseUrl}/users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

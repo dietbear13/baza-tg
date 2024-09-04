@@ -112,15 +112,19 @@ const massageTypes = computed<{ label: string; value: Slot }[]>(() => {
   }, [] as { label: string; value: Slot }[]);
 });
 
+
+// Вместо fetch используем useFetch для загрузки слотов
 const loadSlots = async () => {
   try {
-    const response = await fetch(`${process.env.VUE_APP_API_URL}/slots`);
+    console.log("Fetching slots from API");
+    const response = await fetch('http://localhost:3001/api/slots');
+    console.log("response", response)
     if (response.ok) {
       const data = await response.json();
       slots.value = data.map((slot: any) => ({
         ...slot,
-        _id: typeof slot._id === 'object' && slot._id.$oid ? slot._id.$oid : slot._id,
-        datetime: slot.datetime * 1000, // Преобразуем время в миллисекунды
+        // Преобразование datetime из UNIX-времени в миллисекунды
+        datetime: slot.datetime * 1000,
       }));
       filterSlots();
     } else {
@@ -132,12 +136,10 @@ const loadSlots = async () => {
 };
 
 const filterSlots = () => {
-  const selectedDateValue = format(selectedDate.value, 'yyyy-MM-dd');
-
+  const selectedDateValue = format(selectedDate.value, 'yyyy-MM-dd');  // Преобразование выбранной даты
   filteredSlots.value = slots.value.filter(slot => {
-    const slotDateValue = format(new Date(slot.datetime), 'yyyy-MM-dd');
-    const isAvailable = slot.status === 'available';
-    return slotDateValue === selectedDateValue && isAvailable;
+    const slotDateValue = format(new Date(slot.datetime), 'yyyy-MM-dd');  // Преобразование времени слота
+    return slotDateValue === selectedDateValue && slot.status === 'available';
   });
 };
 
@@ -147,7 +149,7 @@ const confirmBooking = async (slot: Slot) => {
     try {
       const userId = String(userData.value?.user.id) || 'unknown_user';
       // const userId = userData?.value?.id || 'unknown_user';
-      const url = `${process.env.VUE_APP_API_URL}/slots/${currentSlot._id}/book`;
+      const url = `api/slots/${currentSlot._id}/book`;
 
       const response = await fetch(url, {
         method: 'POST',
@@ -219,7 +221,7 @@ watch(slots, () => {
             :allowed-dates="allowedDates"
             :day-class="getDayClass"
             color="primary"
-            class="mb-4 border-s-thin pa-sm-0"
+            class="mb-0 border-s-thin pa-0"
             width="100%"
             :border="true"
         ></v-date-picker>
@@ -234,7 +236,7 @@ watch(slots, () => {
             color="primary"
             item-title="label"
             item-value="value"
-            class="mb-4 pa-sm-0"
+            class="mb-0 pa-0"
         ></v-select>
       </v-col>
     </v-row>
@@ -247,7 +249,7 @@ watch(slots, () => {
             color="primary"
             item-title="label"
             item-value="value"
-            class="mb-4 pa-sm-0"
+            class="mb-0"
         ></v-select>
       </v-col>
     </v-row>

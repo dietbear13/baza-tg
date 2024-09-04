@@ -11,7 +11,7 @@
 import Calendar from '../components/data/Calendar.vue'
 
 useHead({
-  title: 'TODO SEO',
+  title: 'Запись',
   meta: [
     { name: 'description', content: 'My amazing site.' }
   ],

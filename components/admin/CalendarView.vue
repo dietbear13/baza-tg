@@ -128,7 +128,7 @@ onMounted(() => {
 
 const loadSlots = async () => {
   try {
-    const { data } = await useFetch('http://localhost:3001/api/admin/slots');
+    const { data } = await useFetch('/api/admin/slots');
     console.log('Загруженные слоты:', data.value);
     slots.value = data.value;
   } catch (error) {
@@ -218,7 +218,7 @@ const fillSlots = async () => {
         console.log('New slot data to be sent:', JSON.stringify(newSlot, null, 2));
 
         try {
-          const response = await fetch('http://localhost:3001/api/admin/slots', {
+          const response = await fetch('/api/admin/slots', {
             method: 'POST',
             body: JSON.stringify(newSlot),
             headers: {
@@ -259,8 +259,8 @@ const deleteEvent = async event => {
       return;
     }
 
-    console.log('Отправка запроса на удаление:', `http://localhost:3001/api/admin/slots/${event._id}`);
-    const response = await fetch(`http://localhost:3001/api/admin/slots/${event._id}`, {
+    console.log('Отправка запроса на удаление:', `/api/admin/slots/${event._id}`);
+    const response = await fetch(`/api/admin/slots/${event._id}`, {
       method: 'DELETE',
     });
 

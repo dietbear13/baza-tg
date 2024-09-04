@@ -231,7 +231,7 @@ const cancelColumn = async (day: any) => {
   for (const slot of slotsToCancel) {
     slot.status = 'available';
     slot.bookedBy = null;
-    await fetch(`http://localhost:3001/api/admin/slots/${slot._id}`, {
+    await fetch(`/api/admin/slots/${slot._id}`, {
       method: 'PATCH',
       body: JSON.stringify(slot),
       headers: {
@@ -245,7 +245,7 @@ const cancelColumn = async (day: any) => {
 const deleteColumn = async (day: any) => {
   const slotsToDelete = slots.value.filter(slot => format(fromUnixTime(slot.datetime), 'yyyy-MM-dd') === format(day.date, 'yyyy-MM-dd'));
   for (const slot of slotsToDelete) {
-    await fetch(`http://localhost:3001/api/admin/slots/${slot._id}`, {
+    await fetch(`/api/admin/slots/${slot._id}`, {
       method: 'DELETE',
     });
   }
@@ -383,6 +383,10 @@ alert("Все слоты по выбранным фильтрам успешно
 // Обновляем данные после освобождения
 await loadSlots();
 };
+
+const filterMassageType = ref('Все');
+const filterTherapist = ref('Все');
+
 
 const loadSlots = async () => {
   try {

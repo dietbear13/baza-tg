@@ -9,10 +9,12 @@ export default defineNuxtRouteMiddleware((to) => {
         return;
     }
 
+    // Логирование состояния для проверки
     console.log("Store state:", store.state);
 
+    // Проверка аутентификации
     if (!store.state.isAuthenticated) {
+        console.log("Не аутентифицирован. Перенаправление на /admin/login");
         return navigateTo('/admin/login');
     }
 });
-
